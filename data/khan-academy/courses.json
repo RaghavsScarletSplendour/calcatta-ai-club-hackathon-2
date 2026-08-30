@@ -1,0 +1,235 @@
+{
+  "source": "Reconstructed Khan Academy course catalog. Not a live scrape.",
+  "pulled_at": "2026-08-30",
+  "license_note": "KA videos/exercises are CC BY-NC-SA. Catalog titles/urls only. Do not copy lesson bodies.",
+  "attribution": "Khan Academy, https://www.khanacademy.org — All Khan Academy content is available for free at www.khanacademy.org.",
+  "sources": [
+    {
+      "id": "ka-mastery-2026",
+      "url": "https://support.khanacademy.org/hc/en-us/articles/360014675332-Which-Khan-Academy-courses-have-Mastery-enabled",
+      "as_of": "2026-06",
+      "what": "Official list of mastery-enabled courses"
+    },
+    {
+      "id": "ka-math-index-2026",
+      "url": "https://www.khanacademy.org/math",
+      "as_of": "2026-08-28",
+      "what": "Search-indexed math domain page (live HTML blocked)"
+    },
+    {
+      "id": "ka-alg1-units-2026",
+      "url": "https://www.khanacademy.org/math/algebra/x2f8bb11595b61c86:alg1-ccss-teacher-resources/x2f8bb11595b61c86:alg1-ccss-welcome-to-teacher-resources/a/alg1-ccss-unit-guides-and-other-resources",
+      "as_of": "2026-08-28",
+      "what": "Algebra 1 CCSS unit guides (partial: units 1–5 confirmed)"
+    },
+    {
+      "id": "imagemd-2024",
+      "url": "https://imagemd.org/2023/12/26/khan-academy-list-of-courses/",
+      "as_of": "2024-08-19",
+      "what": "Independent homepage dump. Older. Used to fill domains the 2026 mastery list omits (life skills, partners, some computing)."
+    }
+  ],
+  "shape": {
+    "levels": ["domain", "course", "unit", "lesson", "item"],
+    "item_kinds": ["Video", "Article", "Exercise"],
+    "mastery_ladder": ["attempted", "familiar", "proficient", "mastered"],
+    "checks": ["lesson_quiz", "unit_test", "course_challenge"]
+  },
+  "domains": [
+    {
+      "id": "math",
+      "title": "Math",
+      "url": "https://www.khanacademy.org/math",
+      "groups": [
+        {
+          "id": "prek-8",
+          "title": "Pre-K – 8th grade",
+          "courses": [
+            {"slug": "early-math", "title": "Early math review", "url": "https://www.khanacademy.org/math/early-math", "mastery": true},
+            {"slug": "cc-2nd-grade-math", "title": "2nd grade", "url": "https://www.khanacademy.org/math/cc-2nd-grade-math", "mastery": true},
+            {"slug": "cc-third-grade-math", "title": "3rd grade", "url": "https://www.khanacademy.org/math/cc-third-grade-math", "mastery": true},
+            {"slug": "cc-fourth-grade-math", "title": "4th grade", "url": "https://www.khanacademy.org/math/cc-fourth-grade-math", "mastery": true},
+            {"slug": "cc-fifth-grade-math", "title": "5th grade", "url": "https://www.khanacademy.org/math/cc-fifth-grade-math", "mastery": true},
+            {"slug": "cc-sixth-grade-math", "title": "6th grade", "url": "https://www.khanacademy.org/math/cc-sixth-grade-math", "mastery": true},
+            {"slug": "cc-seventh-grade-math", "title": "7th grade", "url": "https://www.khanacademy.org/math/cc-seventh-grade-math", "mastery": true},
+            {"slug": "cc-eighth-grade-math", "title": "8th grade", "url": "https://www.khanacademy.org/math/cc-eighth-grade-math", "mastery": true},
+            {"slug": "arithmetic", "title": "Arithmetic", "url": "https://www.khanacademy.org/math/arithmetic", "mastery": true},
+            {"slug": "pre-algebra", "title": "Pre-algebra", "url": "https://www.khanacademy.org/math/pre-algebra", "mastery": true}
+          ]
+        },
+        {
+          "id": "high-school-college",
+          "title": "High school & college",
+          "courses": [
+            {"slug": "algebra", "title": "Algebra 1", "url": "https://www.khanacademy.org/math/algebra", "mastery": true, "hackathon": "seed",
+             "units_confirmed": [
+               {"n": 1, "title": "Algebra foundations"},
+               {"n": 2, "title": "Solving equations & inequalities"},
+               {"n": 3, "title": "Working with units"},
+               {"n": 4, "title": "Linear equations & graphs"},
+               {"n": 5, "title": "Forms of linear equations"}
+             ],
+             "units_note": "Units 1–5 from official Algebra 1 unit guides, 28 Aug 2026. Later units not pulled."},
+            {"slug": "geometry", "title": "Geometry", "url": "https://www.khanacademy.org/math/geometry", "mastery": true},
+            {"slug": "algebra2", "title": "Algebra 2", "url": "https://www.khanacademy.org/math/algebra2", "mastery": true},
+            {"slug": "math1", "title": "Mathematics 1", "url": "https://www.khanacademy.org/math/math1", "mastery": true},
+            {"slug": "math2", "title": "Mathematics 2", "url": "https://www.khanacademy.org/math/math2", "mastery": true},
+            {"slug": "math3", "title": "Mathematics 3", "url": "https://www.khanacademy.org/math/math3", "mastery": true},
+            {"slug": "trigonometry", "title": "Trigonometry", "url": "https://www.khanacademy.org/math/trigonometry", "mastery": true},
+            {"slug": "precalculus", "title": "Precalculus", "url": "https://www.khanacademy.org/math/precalculus", "mastery": true},
+            {"slug": "probability", "title": "High school statistics", "url": "https://www.khanacademy.org/math/statistics-probability", "mastery": true},
+            {"slug": "statistics-probability", "title": "Statistics and probability", "url": "https://www.khanacademy.org/math/statistics-probability", "mastery": true, "hackathon": "seed",
+             "units_partial": [
+               {"n": 2, "title": "Displaying and comparing quantitative data"},
+               {"n": 3, "title": "Summarizing quantitative data"},
+               {"n": 5, "title": "Describing relationships in quantitative data"}
+             ],
+             "units_note": "Unit numbers from KA GED help article mapping, 21 May 2026. Not a full unit list."},
+            {"slug": "ap-calculus-ab", "title": "AP®/College Calculus AB", "url": "https://www.khanacademy.org/math/ap-calculus-ab", "mastery": true},
+            {"slug": "ap-calculus-bc", "title": "AP®/College Calculus BC", "url": "https://www.khanacademy.org/math/ap-calculus-bc", "mastery": true},
+            {"slug": "ap-statistics", "title": "AP®/College Statistics", "url": "https://www.khanacademy.org/math/ap-statistics", "mastery": true, "hackathon": "seed"},
+            {"slug": "multivariable-calculus", "title": "Multivariable calculus", "url": "https://www.khanacademy.org/math/multivariable-calculus", "mastery": true},
+            {"slug": "differential-equations", "title": "Differential equations", "url": "https://www.khanacademy.org/math/differential-equations", "mastery": false, "source": "imagemd-2024"},
+            {"slug": "linear-algebra", "title": "Linear algebra", "url": "https://www.khanacademy.org/math/linear-algebra", "mastery": false, "source": "imagemd-2024"}
+          ]
+        },
+        {
+          "id": "get-ready",
+          "title": "Get ready courses (diagnostic ramps)",
+          "note": "These are the KA pattern for 'start from where you are' — a short course that fills gaps before the real one.",
+          "courses": [
+            {"title": "Get ready for 3rd grade"},
+            {"title": "Get ready for 4th grade"},
+            {"title": "Get ready for 5th grade"},
+            {"title": "Get ready for 6th grade"},
+            {"title": "Get ready for 7th grade"},
+            {"title": "Get ready for 8th grade"},
+            {"title": "Get ready for Algebra 1"},
+            {"title": "Get ready for Geometry"},
+            {"title": "Get ready for Algebra 2"},
+            {"title": "Get ready for Precalculus"},
+            {"title": "Get ready for AP® Calculus"},
+            {"title": "Get ready for AP® Statistics"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "science",
+      "title": "Science",
+      "url": "https://www.khanacademy.org/science",
+      "courses": [
+        {"title": "Middle school biology - NGSS", "mastery": true},
+        {"title": "Middle school Earth and space science - NGSS", "mastery": true},
+        {"title": "Middle school physics - NGSS", "mastery": true},
+        {"title": "High school biology", "mastery": true},
+        {"title": "High school biology - NGSS", "mastery": true},
+        {"title": "High school chemistry", "mastery": false, "source": "imagemd-2024"},
+        {"title": "High school physics", "mastery": true},
+        {"title": "High school physics - NGSS", "mastery": true},
+        {"title": "AP®/College Biology", "mastery": true},
+        {"title": "AP®/College Chemistry", "mastery": true},
+        {"title": "AP®/College Environmental Science", "mastery": true},
+        {"title": "AP®/College Physics 1", "mastery": true},
+        {"title": "Health and medicine", "mastery": false, "source": "imagemd-2024"}
+      ]
+    },
+    {
+      "id": "computing",
+      "title": "Computing",
+      "url": "https://www.khanacademy.org/computing",
+      "courses": [
+        {"title": "Intro to CS – Python", "url": "https://www.khanacademy.org/computing/intro-to-python-program", "mastery": false, "source": "imagemd-2024", "hackathon": "seed",
+         "outline_from_ka_intro_video": ["variables", "conditionals", "loops", "functions", "data structures", "projects: webpage, recommender, simulation, game, data analysis"]},
+        {"title": "Computer programming", "url": "https://www.khanacademy.org/computing/computer-programming", "mastery": false, "source": "imagemd-2024"},
+        {"title": "Computers and the Internet", "mastery": true},
+        {"title": "AP®/College Computer Science Principles", "mastery": true},
+        {"title": "Computer science theory", "url": "https://www.khanacademy.org/computing/computer-science", "mastery": false, "note": "Confirmed as a live path by yt-dlp unit extractor (cryptography, algorithms)."},
+        {"title": "Pixar in a Box", "url": "https://www.khanacademy.org/computing/pixar", "mastery": false}
+      ]
+    },
+    {
+      "id": "ela",
+      "title": "Reading & language arts",
+      "url": "https://www.khanacademy.org/ela",
+      "courses": [
+        {"title": "2nd–9th grade reading and vocabulary", "mastery": "partial", "note": "Mastery only on select units, 6th–10th."},
+        {"title": "Grammar", "url": "https://www.khanacademy.org/humanities/grammar", "mastery": true}
+      ]
+    },
+    {
+      "id": "humanities",
+      "title": "Arts & humanities",
+      "url": "https://www.khanacademy.org/humanities",
+      "courses": [
+        {"title": "US History", "mastery": true},
+        {"title": "AP®/College US History", "mastery": true},
+        {"title": "US government and civics", "mastery": true},
+        {"title": "AP®/College US Government and Politics", "mastery": true},
+        {"title": "World History Project - Origins to the Present", "mastery": true},
+        {"title": "World History Project - 1750 to the Present", "mastery": true},
+        {"title": "AP®/College World History", "mastery": false, "source": "imagemd-2024"},
+        {"title": "Big History", "mastery": false, "source": "imagemd-2024"},
+        {"title": "Art history", "mastery": false, "source": "imagemd-2024"},
+        {"title": "AP®/College Art History", "mastery": false, "source": "imagemd-2024"},
+        {"title": "Constitution 101 (pilot)", "mastery": false, "source": "imagemd-2024"}
+      ]
+    },
+    {
+      "id": "economics",
+      "title": "Economics",
+      "url": "https://www.khanacademy.org/economics-finance-domain",
+      "courses": [
+        {"title": "Macroeconomics", "mastery": false, "source": "imagemd-2024"},
+        {"title": "AP®/College Macroeconomics", "mastery": true},
+        {"title": "Microeconomics", "mastery": false, "source": "imagemd-2024"},
+        {"title": "AP®/College Microeconomics", "mastery": true}
+      ]
+    },
+    {
+      "id": "life-skills",
+      "title": "Life skills",
+      "source": "imagemd-2024",
+      "courses": [
+        {"title": "Financial literacy", "hackathon": "ops"},
+        {"title": "Personal finance", "hackathon": "ops"},
+        {"title": "Internet safety"},
+        {"title": "Social media literacy"},
+        {"title": "Growth mindset"},
+        {"title": "College admissions"},
+        {"title": "Careers"},
+        {"title": "AI for education"}
+      ]
+    },
+    {
+      "id": "test-prep",
+      "title": "Test prep",
+      "url": "https://www.khanacademy.org/test-prep",
+      "source": "imagemd-2024",
+      "courses": [
+        {"title": "Digital SAT"},
+        {"title": "LSAT"},
+        {"title": "Praxis Core"},
+        {"title": "MCAT"},
+        {"title": "PISA"}
+      ]
+    }
+  ],
+  "hackathon_seeds": [
+    {
+      "goal": "Accounts manager → analytics",
+      "ka_courses": ["Statistics and probability", "AP®/College Statistics", "Algebra 1", "Intro to CS – Python"],
+      "first_session_from": "Statistics unit 3: summarizing quantitative data (mean/median on a 6-row invoice table)"
+    },
+    {
+      "goal": "Ops / logistics",
+      "ka_courses": ["Algebra 1 (units, linear models)", "Financial literacy"],
+      "first_session_from": "Algebra 1 unit 3: working with units — convert, check, refuse a bad total"
+    },
+    {
+      "goal": "Close more deals",
+      "ka_courses": ["Grammar", "US government and civics (argument)"],
+      "note": "KA is weak here. Generate the work sample. Do not pretend KA has a sales course."
+    }
+  ]
+}
