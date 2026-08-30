@@ -2,11 +2,11 @@
 
 import { saveSession } from "@/lib/store";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 
 const EXAMPLES = [
-  "I want to learn statistics",
-  "intro CS",
+  "intro psychology",
+  "classical conditioning",
   "how to change a tire",
 ];
 
@@ -15,6 +15,7 @@ export function GoalHome() {
   const [goal, setGoal] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const goalRef = useRef("");
 
   async function compile(nextGoal: string) {
     const text = nextGoal.trim();
@@ -39,7 +40,7 @@ export function GoalHome() {
 
   function onSubmit(event: FormEvent) {
     event.preventDefault();
-    void compile(goal);
+    void compile(goalRef.current || goal);
   }
 
   return (
@@ -48,8 +49,8 @@ export function GoalHome() {
       <section className="goal-box">
         <h1>A goal becomes a coach.</h1>
         <p className="lede">
-          Type what you want. Diagnostic first. No syllabus. Six slots on the right,
-          empty until a real check.
+          Type a goal. We compile a short module from open courses, with sources
+          on the card.
         </p>
         <form className="goal-form" onSubmit={onSubmit}>
           <label className="sr-only" htmlFor="goal">
@@ -58,10 +59,13 @@ export function GoalHome() {
           <input
             id="goal"
             value={goal}
-            onChange={(event) => setGoal(event.target.value)}
-            placeholder="stats, intro CS, change a tire"
+            onChange={(event) => {
+              goalRef.current = event.target.value;
+              setGoal(event.target.value);
+            }}
+            placeholder="intro psychology, conditioning, change a tire"
             autoFocus
-            disabled={busy}
+            readOnly={busy}
           />
           <div className="ghosts">
             {EXAMPLES.map((example) => (
@@ -69,6 +73,7 @@ export function GoalHome() {
                 key={example}
                 type="button"
                 onClick={() => {
+                  goalRef.current = example;
                   setGoal(example);
                   void compile(example);
                 }}
@@ -78,7 +83,7 @@ export function GoalHome() {
               </button>
             ))}
           </div>
-          <button className="enter" type="submit" disabled={busy || !goal.trim()}>
+          <button className="enter" type="submit" disabled={busy}>
             {busy ? "Writing the first card…" : "Enter"}
           </button>
           {error ? <p className="err">{error}</p> : null}

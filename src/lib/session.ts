@@ -42,6 +42,8 @@ export function newSession(input: {
   skills: Skill[];
   first: Card;
   brain?: string;
+  moduleId?: string;
+  moduleTitle?: string;
 }): Session {
   const first: Card = {
     ...input.first,
@@ -60,8 +62,15 @@ export function newSession(input: {
     events: [],
     memory: { stand: [], landed: [], promised: [] },
     brain: input.brain,
+    moduleId: input.moduleId,
+    moduleTitle: input.moduleTitle,
   };
-  pushEvent(session, "compile", { goal: session.goal, path: session.path, brain: input.brain });
+  pushEvent(session, "compile", {
+    goal: session.goal,
+    path: session.path,
+    brain: input.brain,
+    moduleId: input.moduleId,
+  });
   return session;
 }
 

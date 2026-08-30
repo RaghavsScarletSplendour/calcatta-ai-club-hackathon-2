@@ -1,20 +1,24 @@
-import type { Card, Path, Session } from "./schema";
+import type { Card, Session } from "./schema";
 import { pushReceipts } from "./alchemyst";
 import { brainCompile, brainSkip, brainTurn } from "./brain";
 import {
+  catalogSkip,
   fallbackAfterAnswer,
   fallbackCompile,
   fallbackOverrideTeach,
   fallbackSkip,
+  fillHollowLesson,
   rehearsalKind,
 } from "./fallback";
 import { addMemory } from "./memory";
+import { matchModule, moduleSkills } from "./catalog";
 import {
   applySkillStates,
   checksDone,
   clampIncoming,
   gradeAnswer,
   hasTeach,
+  hasTraining,
   liveSkills,
   padSkills,
   shouldEndDiagnostic,
@@ -35,10 +39,10 @@ function attachNext(session: Session, incoming: Card[], lastAnswer: string): voi
   session.cards.push(...clamped);
 }
 
-function ensureTeach(session: Session): void {
-  if (hasTeach(session)) return;
-  if (!shouldEndDiagnostic(session) && currentCard(session)) return;
+function ensureLesson(session: Session): void {
   if (currentCard(session)) return;
+  if (!shouldEndDiagnostic(session) && !hasTraining(session) && !hasTeach(session)) return;
+  if (hasTeach(session)) return;
   session.cards.push(...withIds(session, fallbackOverrideTeach(session)));
 }
 
@@ -62,7 +66,7 @@ function pruneFinished(session: Session): void {
 
 function applyGrade(card: Card, answer: string, modelCorrect?: boolean): void {
   const local = gradeAnswer(card, answer);
-  if (card.kind === "background" || card.kind === "chips" || card.kind === "teach") {
+  if (card.kind === "background" || card.kind === "chips" || card.kind === "teach" || card.kind === "training") {
     card.correct = undefined;
     return;
   }
@@ -88,16 +92,23 @@ async function remember(session: Session): Promise<void> {
 export async function compileGoal(goal: string): Promise<Session> {
   const trimmed = goal.trim();
   if (!trimmed) throw new Error("Type a goal first.");
+  const matched = matchModule(trimmed);
 
   try {
     const compiled = await brainCompile(trimmed);
-    const canned = rehearsalKind(trimmed) ? fallbackCompile(trimmed).skills : compiled.skills;
+    const canned = matched
+      ? moduleSkills(matched)
+      : rehearsalKind(trimmed)
+        ? fallbackCompile(trimmed).skills
+        : compiled.skills;
     const session = newSession({
       goal: trimmed,
-      path: compiled.path,
+      path: matched ? "college" : compiled.path,
       skills: padSkills(canned),
       first: compiled.firstCard,
       brain: compiled.provider,
+      moduleId: matched?.id,
+      moduleTitle: matched?.title,
     });
     await remember(session);
     return session;
@@ -109,6 +120,8 @@ export async function compileGoal(goal: string): Promise<Session> {
       skills: padSkills(compiled.skills),
       first: compiled.first,
       brain: compiled.brain,
+      moduleId: matched?.id,
+      moduleTitle: matched?.title,
     });
     await remember(session);
     return session;
@@ -145,6 +158,14 @@ export async function applyAnswer(
   }
 
   applyGrade(card, text, modelCorrect);
+  if (card.subjective && usedBrain && typeof modelCorrect === "boolean") {
+    card.correct = modelCorrect;
+  }
+
+  if (session.moduleId) {
+    const fb = fallbackAfterAnswer(session, card);
+    if (fb.nextCards.length) nextCards = fb.nextCards;
+  }
 
   if (usedBrain) {
     addMemory(session, memoryAdds, eventId);
@@ -152,6 +173,11 @@ export async function applyAnswer(
     const fb = fallbackAfterAnswer(session, card);
     nextCards = fb.nextCards;
     addMemory(session, fb.memoryAdds, eventId);
+  }
+
+  if (!nextCards.length && card.kind !== "refresher") {
+    const fb = fallbackAfterAnswer(session, card);
+    if (fb.nextCards.length) nextCards = fb.nextCards;
   }
 
   if (card.kind === "background" && text) {
@@ -175,8 +201,12 @@ export async function applyAnswer(
     nextCards = nextCards.filter((c) => c.kind !== "teach" && !c.retryOf);
   }
 
+  nextCards = nextCards.map((incoming) => fillHollowLesson(session, incoming));
   attachNext(session, nextCards, text);
-  ensureTeach(session);
+  if (!currentCard(session) && card.kind !== "refresher") {
+    attachNext(session, fallbackAfterAnswer(session, card).nextCards, text);
+  }
+  ensureLesson(session);
   ensureChecks(session, card);
   pruneFinished(session);
   applySkillStates(session);
@@ -197,14 +227,20 @@ export async function applySkip(sessionIn: Session): Promise<Session> {
 
   let nextCards: Card[] = [];
   let memoryAdds = {};
-  try {
-    const skipped = await brainSkip(session);
-    nextCards = [skipped.card];
-    memoryAdds = skipped.memoryAdds;
-  } catch {
-    const fb = fallbackSkip(session);
-    nextCards = fb.nextCards;
-    memoryAdds = fb.memoryAdds;
+  if (session.moduleId) {
+    const cs = catalogSkip(session);
+    nextCards = cs.nextCards;
+    memoryAdds = cs.memoryAdds;
+  } else {
+    try {
+      const skipped = await brainSkip(session);
+      nextCards = [skipped.card];
+      memoryAdds = skipped.memoryAdds;
+    } catch {
+      const fb = fallbackSkip(session);
+      nextCards = fb.nextCards;
+      memoryAdds = fb.memoryAdds;
+    }
   }
 
   const event = pushEvent(session, "skip", { skills: liveSkills(session).map((s) => s.id) });
@@ -213,42 +249,6 @@ export async function applySkip(sessionIn: Session): Promise<Session> {
     addMemory(session, { promised: ["Come back in two days on a live skill"] }, event.id);
   }
   attachNext(session, nextCards, "");
-  applySkillStates(session);
-  bump(session);
-  await remember(session);
-  return session;
-}
-
-export async function applyOverride(sessionIn: Session, path: Path): Promise<Session> {
-  const session = cloneSession(sessionIn);
-  if (session.path === path) return session;
-  session.path = path;
-  session.cards = session.cards.filter((card) => {
-    if (card.answer !== undefined) return true;
-    if (card.kind === "teach" || card.kind === "confirm" || card.kind === "refresher") return false;
-    if (card.phase === "teach" || card.phase === "check" || card.phase === "refresher") return false;
-    return true;
-  });
-  const event = pushEvent(session, "override", { path });
-  addMemory(session, { stand: [`Path set to ${path === "college" ? "college" : "do it now"}`] }, event.id);
-  if (!currentCard(session)) {
-    let nextCards: Card[] = [];
-    try {
-      const fake: Card = {
-        id: "override",
-        kind: "background",
-        prompt: "path override",
-        answer: path,
-        phase: "diagnostic",
-      };
-      const turned = await brainTurn(session, fake);
-      nextCards = turned.nextCards.filter((c) => c.kind === "teach" || c.kind === "confirm" || c.phase === "check");
-    } catch {
-      nextCards = [];
-    }
-    if (!nextCards.length) nextCards = fallbackOverrideTeach(session);
-    attachNext(session, nextCards, "");
-  }
   applySkillStates(session);
   bump(session);
   await remember(session);

@@ -1,79 +1,194 @@
 "use client";
 
-import type { Card } from "@/lib/schema";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import type { Card, Source, WordCue } from "@/lib/schema";
+import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
+import { ExplainChat } from "./ExplainChat";
+import { Transcript } from "./Transcript";
 
 function kicker(card: Card): string {
   if (card.kind === "refresher") return "Two days later";
   if (card.retryOf) return "Easier retry";
   if (card.kind === "background") return "Background";
   if (card.kind === "chips") return "Still vague";
-  if (card.kind === "teach") return "On stage";
+  if (card.kind === "training") return "Training";
+  if (card.kind === "teach") return "Teaching";
   if (card.kind === "confirm") return "Confirm";
+  if (card.subjective) return "Write it";
   if (card.phase === "check") return "Check";
   return "Problem";
 }
 
+function sourceIndex(sources: Source[] | undefined, id?: string): number {
+  if (!sources?.length || !id) return -1;
+  return sources.findIndex((source) => source.id === id);
+}
+
 export function CardView({
   card,
+  goal,
   busy,
   onSubmit,
   onSpeak,
   speaking,
+  words,
+  currentTime,
 }: {
   card: Card;
+  goal: string;
   busy: boolean;
   onSubmit: (answer: string, extra?: { didIt?: boolean }) => void;
   onSpeak: (text: string) => void;
   speaking: boolean;
+  words: WordCue[];
+  currentTime: number;
 }) {
   const [text, setText] = useState("");
   const [didIt, setDidIt] = useState(false);
+  const textRef = useRef("");
+  const answerRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
+    textRef.current = "";
     setText("");
     setDidIt(false);
   }, [card.id]);
 
+  const visibleBlocks = (card.blocks || []).filter(
+    (block) => (block.heading || "").trim() || (block.body || "").trim(),
+  );
+  const visibleSteps = (card.steps || []).filter(
+    (step) => (step.title || "").trim() || (step.body || "").trim(),
+  );
+
   const speakText = useMemo(() => {
-    if (!card.steps?.length) return "";
-    return card.steps.map((step) => step.speak || `${step.title}. ${step.body}`).join(" ");
-  }, [card.steps]);
+    const raw = card.script
+      ? card.script
+      : visibleSteps.length
+        ? visibleSteps.map((step) => step.speak || `${step.title}. ${step.body}`).join(" ")
+        : "";
+    if (raw.replace(/[.\s]+/g, " ").trim().length < 12) return "";
+    return raw;
+  }, [card.script, visibleSteps]);
+
+  const isLesson = card.kind === "training" || card.kind === "teach";
+  const needsTypedAnswer = !card.choices?.length && !isLesson;
 
   useEffect(() => {
-    if (card.kind === "teach" && speakText) onSpeak(speakText);
-    // Autoplay once when the teach card mounts.
+    if (isLesson && speakText) onSpeak(speakText);
+    // Autoplay once when the lesson card mounts.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [card.id]);
 
+  useEffect(() => {
+    if (!needsTypedAnswer || busy) return;
+    const node = answerRef.current;
+    if (!node) return;
+    node.focus();
+    const end = node.value.length;
+    node.setSelectionRange(end, end);
+  }, [card.id, needsTypedAnswer, busy]);
+
+  const cues = words.length ? words : speakText ? [{ text: speakText, start: 0, end: 1 }] : [];
+
+  function write(value: string) {
+    textRef.current = value;
+    setText(value);
+  }
+
   function send(answer: string) {
     if (busy) return;
-    onSubmit(answer, card.kind === "confirm" ? { didIt } : undefined);
+    const trimmed = answer.trim();
+    if (!trimmed) return;
+    onSubmit(trimmed, card.kind === "confirm" ? { didIt } : undefined);
   }
 
   function onForm(event: FormEvent) {
     event.preventDefault();
-    send(text);
+    send(textRef.current);
+  }
+
+  function onAnswerKey(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key !== "Enter" || event.shiftKey) return;
+    if (event.nativeEvent.isComposing || event.keyCode === 229) return;
+    event.preventDefault();
+    send(textRef.current);
   }
 
   return (
-    <article className="card" key={card.id}>
-      <p className="kicker">{kicker(card)}</p>
+    <article className={`card${isLesson ? " lesson" : ""}`} key={card.id}>
+      <p className="kicker">
+        {kicker(card)}
+        {card.minutes ? ` · ~${card.minutes} min` : ""}
+      </p>
       <h2>{card.prompt}</h2>
 
-      {card.steps?.length ? (
+      {visibleBlocks.length ? (
+        <div className="blocks">
+          {visibleBlocks.map((block) => {
+            const n = sourceIndex(card.sources, block.sourceId);
+            return (
+              <section className={`block block-${block.kind}`} key={block.id}>
+                {block.heading ? <h3>{block.heading}</h3> : null}
+                {block.body ? (
+                  <p>
+                    {block.body}
+                    {n >= 0 ? <sup className="cite-mark">[{n + 1}]</sup> : null}
+                  </p>
+                ) : null}
+              </section>
+            );
+          })}
+        </div>
+      ) : visibleSteps.length ? (
         <div className="steps">
-          {card.steps.map((step, i) => (
+          {visibleSteps.map((step, i) => (
             <div className="step" key={`${card.id}-s${i}`}>
               <div className="num">{String(i + 1).padStart(2, "0")}</div>
               <div>
-                <h3>{step.title}</h3>
-                <p>{step.body}</p>
+                {step.title ? <h3>{step.title}</h3> : null}
+                {step.body ? <p>{step.body}</p> : null}
               </div>
             </div>
           ))}
         </div>
+      ) : speakText ? (
+        <div className="blocks">
+          {speakText
+            .split(/(?<=\.)\s+/)
+            .filter((line) => line.trim())
+            .map((line, i) => (
+              <p key={`${card.id}-line-${i}`}>{line}</p>
+            ))}
+        </div>
       ) : null}
+
+      {isLesson && cues.length ? (
+        <div className="script-panel">
+          <Transcript words={cues} currentTime={currentTime} playing={speaking} />
+        </div>
+      ) : null}
+
+      {card.sources?.length ? (
+        <footer className="sources">
+          <h4>Sources</h4>
+          <ol>
+            {card.sources.map((source) => (
+              <li key={source.id}>
+                {source.url ? (
+                  <a href={source.url} target="_blank" rel="noreferrer">
+                    {source.attribution || source.title}
+                  </a>
+                ) : (
+                  <span>{source.attribution || source.title}</span>
+                )}
+                {source.license ? <span className="license"> · {source.license}</span> : null}
+              </li>
+            ))}
+          </ol>
+        </footer>
+      ) : null}
+
+      {isLesson ? <ExplainChat card={card} goal={goal} busy={busy} /> : null}
 
       {card.choices?.length ? (
         <div className="choices">
@@ -96,7 +211,7 @@ export function CardView({
         </label>
       ) : null}
 
-      {card.kind === "teach" ? (
+      {isLesson ? (
         <div className="row">
           <button
             type="button"
@@ -112,24 +227,21 @@ export function CardView({
         </div>
       ) : null}
 
-      {!card.choices?.length && card.kind !== "teach" ? (
+      {!card.choices?.length && !isLesson ? (
         <form onSubmit={onForm}>
           <label className="sr-only" htmlFor="answer">
             Answer
           </label>
           <textarea
             id="answer"
+            ref={answerRef}
             className="answer"
             value={text}
-            onChange={(event) => setText(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" && !event.shiftKey) {
-                event.preventDefault();
-                send(text);
-              }
-            }}
-            placeholder="Type, then enter"
-            disabled={busy}
+            onChange={(event) => write(event.target.value)}
+            onKeyDown={onAnswerKey}
+            placeholder={card.subjective ? "Write a short answer, then enter" : "Type, then enter"}
+            autoFocus={needsTypedAnswer}
+            readOnly={busy}
           />
           {card.kind === "confirm" ? (
             <label className="didit">
@@ -142,7 +254,7 @@ export function CardView({
             </label>
           ) : null}
           <div className="row">
-            <button className="primary" type="submit" disabled={busy || !text.trim()}>
+            <button className="primary" type="submit" disabled={busy}>
               {busy ? "Next card…" : "Enter"}
             </button>
           </div>

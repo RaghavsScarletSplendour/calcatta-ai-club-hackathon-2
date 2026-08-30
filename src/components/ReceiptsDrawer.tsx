@@ -34,6 +34,11 @@ export function ReceiptsDrawer({
         <p className="lede" style={{ marginTop: 0 }}>
           Cited file. Each line ends with the answer that proved it.
         </p>
+        {session.moduleTitle ? (
+          <p className="lede" style={{ marginTop: 0 }}>
+            Module: {session.moduleTitle}
+          </p>
+        ) : null}
         {session.receipts?.alchemyst ? (
           <div className="badge">stored</div>
         ) : (

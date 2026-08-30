@@ -1,5 +1,5 @@
-import { applyAnswer, applyOverride } from "@/lib/coach";
-import type { Path, Session } from "@/lib/schema";
+import { applyAnswer } from "@/lib/coach";
+import type { Session } from "@/lib/schema";
 
 export const dynamic = "force-dynamic";
 
@@ -9,15 +9,9 @@ export async function POST(req: Request) {
       session?: Session;
       answer?: string;
       didIt?: boolean;
-      action?: string;
-      path?: Path;
     };
     if (!body.session) {
       return Response.json({ error: "Missing session" }, { status: 400 });
-    }
-    if (body.action === "override" && (body.path === "college" || body.path === "life")) {
-      const session = await applyOverride(body.session, body.path);
-      return Response.json({ session });
     }
     const session = await applyAnswer(body.session, body.answer || "", { didIt: body.didIt });
     return Response.json({ session });

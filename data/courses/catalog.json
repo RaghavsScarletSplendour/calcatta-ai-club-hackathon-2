@@ -1,0 +1,531 @@
+{
+  "updated": "2026-08-30",
+  "note": "Demo course store shipped with the Vercel app. College modules are rewritten from public open courses, not a live scrape of copyrighted textbooks.",
+  "modules": [
+    {
+      "id": "psych-intro",
+      "subject": "psychology",
+      "title": "What psychology studies",
+      "keywords": [
+        "psych",
+        "psychology",
+        "mind",
+        "behavior",
+        "cognition",
+        "intro psych",
+        "introduction to psychology",
+        "gabrieli",
+        "bloom"
+      ],
+      "minutes": 5,
+      "skills": [
+        { "id": "s1", "label": "Mind and behavior" },
+        { "id": "s2", "label": "Constructed perception" },
+        { "id": "s3", "label": "Attention bottleneck" },
+        { "id": "s4", "label": "Automaticity" },
+        { "id": "s5", "label": "Feel vs act" },
+        { "id": "s6", "label": "Keep it live" }
+      ],
+      "sources": [
+        {
+          "id": "mit-900",
+          "title": "Introduction to Psychology (9.00SC), Fall 2011",
+          "url": "https://ocw.mit.edu/courses/9-00sc-introduction-to-psychology-fall-2011/",
+          "attribution": "Gabrieli, John D. E. Introduction to Psychology. MIT OpenCourseWare.",
+          "license": "CC BY-NC-SA 4.0"
+        },
+        {
+          "id": "mit-900-l1",
+          "title": "Lecture 1: Introduction — session overview",
+          "url": "https://ocw.mit.edu/courses/9-00sc-introduction-to-psychology-fall-2011/pages/introduction/",
+          "attribution": "Gabrieli, John D. E. Lecture 1: Introduction. MIT OpenCourseWare.",
+          "license": "CC BY-NC-SA 4.0"
+        },
+        {
+          "id": "openstax-11",
+          "title": "Psychology 2e, §1.1 What Is Psychology?",
+          "url": "https://openstax.org/books/psychology-2e/pages/1-1-what-is-psychology",
+          "attribution": "Spielman, Jenkins, and Lovett. Psychology 2e. OpenStax.",
+          "license": "CC BY 4.0"
+        },
+        {
+          "id": "yale-bloom",
+          "title": "PSYC 110: Introduction to Psychology",
+          "url": "https://oyc.yale.edu/introduction-psychology/psyc-110",
+          "attribution": "Bloom, Paul. Introduction to Psychology. Open Yale Courses.",
+          "license": "CC BY-NC-SA 3.0"
+        }
+      ],
+      "training": {
+        "prompt": "Hold the definition before the topics",
+        "script": "Do not start with a pile of topics. First psychology courses throw dreams, vision, and personality at you. Hold one sentence instead. Psychology is the scientific study of mind and behavior. Psyche means life. Logos means explanation. MIT and OpenStax open with that same sentence. Examples come after, as proof. A grid that flashes dots that are not printed. An attention bottleneck. Thoughts that run without a meeting. Those examples defend the definition. They are not a replacement for it. The live debates stay open on purpose.",
+        "blocks": [
+          {
+            "id": "t1",
+            "kind": "heading",
+            "heading": "One sentence",
+            "body": "Psychology is the scientific study of mind and behavior. Psyche is life. Logos is explanation.",
+            "sourceId": "openstax-11"
+          },
+          {
+            "id": "t2",
+            "kind": "concept",
+            "heading": "Examples are proof",
+            "body": "Illusions, attention limits, and automaticity come after the definition. They defend it. They are not the definition.",
+            "sourceId": "mit-900"
+          },
+          {
+            "id": "t3",
+            "kind": "concept",
+            "heading": "Debates stay open",
+            "body": "Nature and nurture, free will, consciousness. A first course does not close these. It teaches you to ask them with evidence.",
+            "sourceId": "mit-900"
+          }
+        ]
+      },
+      "teaching": {
+        "prompt": "Psychology is the scientific study of mind and behavior",
+        "script": "Psychology is not a vibe check. It is the scientific study of how we think, feel, and act. MIT's introduction course calls it a survey of human nature: how the mind works, and how the brain supports the mind. OpenStax uses the same core sentence. Psychology is the scientific study of mind and behavior. The Greek roots are psyche, meaning life, and logos, meaning explanation. Hold that definition. Everything else in a first course hangs off it. Yale's open course with Paul Bloom walks in through everyday questions. What do dreams mean. Why you cannot tickle yourself. How people decide, remember, love, and get persuaded. Same science. Different door. Here is the analogy. Your mind is not a camera. It is a construction crew. Optical illusions are the proof they use on day one at MIT. In the Hermann grid, black dots seem to flash in the crossings. The dots are not on the page. Your visual system invented them. Attention is a bottleneck. You do not see everything in front of you. You see what the system selected. That is why a move can hide in plain sight. Automaticity is the next heading. A lot of thinking, feeling, and acting runs without a meeting. That speed is useful. It is also the peril. You can be sure, and still be constructed. Last split: how we feel versus how we act. They can come apart. Psychology treats that split as data, not as a moral fail. The live debates in this course are nature and nurture, free will, consciousness, human differences, self and society. You do not settle them in five minutes. You learn to ask them with evidence.",
+        "blocks": [
+          {
+            "id": "b1",
+            "kind": "heading",
+            "heading": "The definition",
+            "body": "Start here. Do not skip to topics."
+          },
+          {
+            "id": "b2",
+            "kind": "concept",
+            "heading": "What the field is",
+            "body": "Psychology is the scientific study of how we think, feel, and act — a survey of human nature: how the mind works, and how the brain supports the mind.",
+            "sourceId": "mit-900"
+          },
+          {
+            "id": "b3",
+            "kind": "definition",
+            "heading": "Mind and behavior",
+            "body": "OpenStax: psychology is the scientific study of mind and behavior. Psyche is life. Logos is explanation.",
+            "sourceId": "openstax-11"
+          },
+          {
+            "id": "b4",
+            "kind": "example",
+            "heading": "The door Yale uses",
+            "body": "Bloom's course asks ordinary questions on purpose: dreams, tickling yourself, persuasion, love, hunger, fiction. The science is the same as MIT's survey. The hook is daily life.",
+            "sourceId": "yale-bloom"
+          },
+          {
+            "id": "b5",
+            "kind": "analogy",
+            "heading": "Not a camera",
+            "body": "The mind is a construction crew. The Hermann grid makes black dots flash in the crossings. The dots are not printed. Perception built them.",
+            "sourceId": "mit-900-l1"
+          },
+          {
+            "id": "b6",
+            "kind": "heading",
+            "heading": "Attention and automaticity",
+            "body": "Two limits of the construction crew."
+          },
+          {
+            "id": "b7",
+            "kind": "definition",
+            "heading": "Attention is a bottleneck",
+            "body": "You do not see the whole scene. You see what got selected. Limits of visual attention are a first-lecture demo for a reason.",
+            "sourceId": "mit-900-l1"
+          },
+          {
+            "id": "b8",
+            "kind": "concept",
+            "heading": "Automaticity",
+            "body": "Much of thinking, feeling, and acting runs without a meeting. Speed is the power. Unchecked certainty is the peril.",
+            "sourceId": "mit-900-l1"
+          },
+          {
+            "id": "b9",
+            "kind": "example",
+            "heading": "Feel versus act",
+            "body": "How we feel and how we act can split. A calm face is not a calm body. Treat the split as data.",
+            "sourceId": "mit-900-l1"
+          },
+          {
+            "id": "b10",
+            "kind": "concept",
+            "heading": "The debates you will keep meeting",
+            "body": "Nature and nurture. Free will. Consciousness. Human differences. Self and society. First courses do not close these. They teach you to ask them with evidence.",
+            "sourceId": "mit-900"
+          }
+        ]
+      },
+      "checks": [
+        {
+          "kind": "problem",
+          "phase": "check",
+          "skillId": "s1",
+          "prompt": "Which sentence is the core definition used in these open courses?",
+          "choices": [
+            "Psychology is a set of tips for being happier",
+            "Psychology is the scientific study of mind and behavior",
+            "Psychology is only the study of mental illness"
+          ],
+          "expected": "Psychology is the scientific study of mind and behavior"
+        },
+        {
+          "kind": "problem",
+          "phase": "check",
+          "skillId": "s2",
+          "prompt": "The Hermann grid is in lecture 1 to show what?",
+          "choices": [
+            "That printed pages hide secret ink",
+            "That perception constructs what you see, it does not just record it",
+            "That attention can hold every detail at once"
+          ],
+          "expected": "That perception constructs what you see, it does not just record it"
+        },
+        {
+          "kind": "problem",
+          "phase": "check",
+          "skillId": "s4",
+          "subjective": true,
+          "prompt": "In two or three sentences: why is automaticity both useful and dangerous?",
+          "expected": "Automaticity lets thinking, feeling, and acting run without a meeting, which is fast and useful, but it can make you feel sure even when the mind constructed a wrong picture.",
+          "rubric": "Pass if they name a benefit (speed, no effort, runs without a meeting) AND a cost (unchecked certainty, constructed error, peril)."
+        }
+      ]
+    },
+    {
+      "id": "psych-learning",
+      "subject": "psychology",
+      "title": "How learning changes us",
+      "keywords": [
+        "learning",
+        "conditioning",
+        "classical",
+        "operant",
+        "pavlov",
+        "thorndike",
+        "little albert",
+        "habit",
+        "reinforcement"
+      ],
+      "minutes": 5,
+      "skills": [
+        { "id": "s1", "label": "Classical conditioning" },
+        { "id": "s2", "label": "Operant conditioning" },
+        { "id": "s3", "label": "Generalization" },
+        { "id": "s4", "label": "Discrimination" },
+        { "id": "s5", "label": "Learned helplessness" },
+        { "id": "s6", "label": "Keep it live" }
+      ],
+      "sources": [
+        {
+          "id": "mit-900-l9",
+          "title": "Lecture 9: Learning — session overview",
+          "url": "https://ocw.mit.edu/courses/9-00sc-introduction-to-psychology-fall-2011/pages/learning/",
+          "attribution": "Gabrieli, John D. E. Lecture 9: Learning. MIT OpenCourseWare.",
+          "license": "CC BY-NC-SA 4.0"
+        },
+        {
+          "id": "mit-900",
+          "title": "Introduction to Psychology (9.00SC), Fall 2011",
+          "url": "https://ocw.mit.edu/courses/9-00sc-introduction-to-psychology-fall-2011/",
+          "attribution": "Gabrieli, John D. E. Introduction to Psychology. MIT OpenCourseWare.",
+          "license": "CC BY-NC-SA 4.0"
+        },
+        {
+          "id": "openstax-11",
+          "title": "Psychology 2e, §1.1 What Is Psychology?",
+          "url": "https://openstax.org/books/psychology-2e/pages/1-1-what-is-psychology",
+          "attribution": "Spielman, Jenkins, and Lovett. Psychology 2e. OpenStax.",
+          "license": "CC BY 4.0"
+        }
+      ],
+      "training": {
+        "prompt": "Listen for the pairing, not the story",
+        "script": "When you hear a lecture on learning, listen for the pairing, not the story. Classical conditioning: a neutral cue becomes a predictor. The tone starts to mean food. Operant conditioning: behavior that works gets more likely. The cat escapes faster. Generalization is leak. A fear of a white rat spreads to other white furry things. Discrimination is the split. This tone means food. A nearby tone does not. Pavlov and Little Albert are the vehicles. The pairing is the point.",
+        "blocks": [
+          {
+            "id": "t1",
+            "kind": "heading",
+            "heading": "Two families",
+            "body": "Classical: a cue becomes a predictor. Operant: a behavior that works gets more likely.",
+            "sourceId": "mit-900-l9"
+          },
+          {
+            "id": "t2",
+            "kind": "concept",
+            "heading": "Leak versus split",
+            "body": "Generalization is leak to similar cues. Discrimination is the split: this cue, not that one.",
+            "sourceId": "mit-900-l9"
+          },
+          {
+            "id": "t3",
+            "kind": "example",
+            "heading": "The stories are vehicles",
+            "body": "Pavlov's dog and Little Albert carry the pairing. Do not stop at the story.",
+            "sourceId": "mit-900-l9"
+          }
+        ]
+      },
+      "teaching": {
+        "prompt": "Learning is how experience changes what we do next",
+        "script": "MIT's learning session asks two questions. How do we learn. How do the things we learn help us survive and deal with the environment. Start with classical conditioning. Pavlov's dog did not think about steak. A tone that used to mean nothing started to mean food, so saliva showed up before the food did. A neutral cue became a predictor. That is the concept. Operant conditioning is the other family. Thorndike's cat got out of the box faster each time a move was followed by escape. Behavior that works gets more likely. Behavior that fails gets less likely. Little Albert is the dark example in the same lecture: a learned fear can attach to a white rat, then leak toward other white furry things. That leak is generalization. A response shows up for cues that only resemble the original. Discrimination is the opposite skill. Pavlov's dog can learn: this exact tone means food. A nearby tone does not. MIT's check-yourself uses that split on purpose. Habituation is simpler still. Repeat a stimulus, and the reaction shrinks. A siren in a new city is huge. A week later it is furniture. Learned helplessness is what happens when nothing you do changes the outcome. The animal, or the person, stops trying even later, when a door is open. Delayed gratification is the other edge: a smaller now versus a larger later. The point of this module is not the famous names. It is the prediction. Learning is the system updating what comes next. If that sentence is still mush, ask. Then we check.",
+        "blocks": [
+          {
+            "id": "b1",
+            "kind": "heading",
+            "heading": "The question",
+            "body": "How do we learn, and how does that help us survive an environment."
+          },
+          {
+            "id": "b2",
+            "kind": "concept",
+            "heading": "Learning",
+            "body": "Experience changes what we do next. The lecture walks from classical conditioning to more complex models, including learned helplessness and delayed gratification.",
+            "sourceId": "mit-900-l9"
+          },
+          {
+            "id": "b3",
+            "kind": "definition",
+            "heading": "Classical conditioning",
+            "body": "A neutral cue becomes a predictor. Pavlov: the tone starts to mean food, so saliva arrives before the food.",
+            "sourceId": "mit-900-l9"
+          },
+          {
+            "id": "b4",
+            "kind": "definition",
+            "heading": "Operant conditioning",
+            "body": "A move that works becomes more likely. Thorndike's cat escapes faster because escape follows the right action.",
+            "sourceId": "mit-900-l9"
+          },
+          {
+            "id": "b5",
+            "kind": "example",
+            "heading": "Little Albert",
+            "body": "A learned fear can attach to a rat, then leak to other white furry things. That leak is the next heading.",
+            "sourceId": "mit-900-l9"
+          },
+          {
+            "id": "b6",
+            "kind": "heading",
+            "heading": "Generalization versus discrimination",
+            "body": "Two predictions. Do not mix them."
+          },
+          {
+            "id": "b7",
+            "kind": "definition",
+            "heading": "Generalization",
+            "body": "Respond to cues that resemble the original. Similar situation, same predicted outcome.",
+            "sourceId": "mit-900-l9"
+          },
+          {
+            "id": "b8",
+            "kind": "definition",
+            "heading": "Discrimination",
+            "body": "Treat a nearby cue as different enough. Similar is not the same. Different outcome.",
+            "sourceId": "mit-900-l9"
+          },
+          {
+            "id": "b9",
+            "kind": "analogy",
+            "heading": "Habituation",
+            "body": "Repeat a stimulus and the reaction shrinks. New siren, then furniture. That is not the same as choosing not to care.",
+            "sourceId": "mit-900-l9"
+          },
+          {
+            "id": "b10",
+            "kind": "concept",
+            "heading": "Learned helplessness",
+            "body": "When nothing you do changes the outcome, trying can stop — even later, when a door is open. It is a failed prediction, stored.",
+            "sourceId": "mit-900-l9"
+          }
+        ]
+      },
+      "checks": [
+        {
+          "kind": "problem",
+          "phase": "check",
+          "skillId": "s1",
+          "prompt": "In Pavlov's setup, what did the dog actually learn?",
+          "choices": [
+            "How to cook steak",
+            "That a tone predicts food",
+            "That saliva is optional"
+          ],
+          "expected": "That a tone predicts food"
+        },
+        {
+          "kind": "problem",
+          "phase": "check",
+          "skillId": "s3",
+          "prompt": "A student is rude to one short-haired experimenter, then avoids a different person who only looks similar. That is closest to:",
+          "choices": [
+            "Discrimination",
+            "Generalization",
+            "Habituation"
+          ],
+          "expected": "Generalization"
+        },
+        {
+          "kind": "problem",
+          "phase": "check",
+          "skillId": "s5",
+          "subjective": true,
+          "prompt": "A person stops applying for jobs after months of silence, then ignores a real opening. Name the idea, and say what prediction got stored.",
+          "expected": "Learned helplessness: the stored prediction is that nothing I do changes the outcome, so trying is useless even when a door is open.",
+          "rubric": "Pass if they name learned helplessness (or a close paraphrase) and state that the person learned outcomes do not depend on their actions."
+        }
+      ]
+    },
+    {
+      "id": "cs-intro",
+      "subject": "computer-science",
+      "title": "A program is a named recipe",
+      "keywords": [
+        "intro cs",
+        "intro computer",
+        "computer science",
+        "programming",
+        "python",
+        "coding",
+        "javascript",
+        "variables",
+        "loops"
+      ],
+      "minutes": 5,
+      "skills": [
+        { "id": "s1", "label": "Variables" },
+        { "id": "s2", "label": "Conditionals" },
+        { "id": "s3", "label": "Loops" },
+        { "id": "s4", "label": "Functions" },
+        { "id": "s5", "label": "Debug a miss" },
+        { "id": "s6", "label": "Keep it live" }
+      ],
+      "sources": [
+        {
+          "id": "mit-60001",
+          "title": "6.0001 Introduction to Computer Science and Programming in Python",
+          "url": "https://ocw.mit.edu/courses/6-0001-introduction-to-computer-science-and-programming-in-python-fall-2016/",
+          "attribution": "Guttag, John. 6.0001 Introduction to Computer Science and Programming in Python. MIT OpenCourseWare.",
+          "license": "CC BY-NC-SA 4.0"
+        }
+      ],
+      "training": {
+        "prompt": "Listen for the recipe, not the language",
+        "script": "MIT's intro CS is not a tour of Python. It is computational thinking: break a job into steps a machine can follow. Hold three objects while you listen. A variable is a labeled box. The name stays. The value can change. A conditional is a fork in the recipe. A loop is the same steps while a test is still true. The easy miss is the stop. If the value the test reads never changes, the loop never ends. A function is a named recipe you can call again. That is the stance. Next is one idea: a program is a named recipe.",
+        "blocks": [
+          {
+            "id": "t1",
+            "kind": "heading",
+            "heading": "Python is the vehicle",
+            "body": "MIT 6.0001 is computational thinking. The language is how the steps get written down, not the point.",
+            "sourceId": "mit-60001"
+          },
+          {
+            "id": "t2",
+            "kind": "concept",
+            "heading": "Three objects to hold",
+            "body": "A box with a name. A fork in the recipe. A loop that must be able to stop.",
+            "sourceId": "mit-60001"
+          },
+          {
+            "id": "t3",
+            "kind": "definition",
+            "heading": "A miss is a step",
+            "body": "Debugging is asking which step did not match what you thought. Not a verdict on you.",
+            "sourceId": "mit-60001"
+          }
+        ]
+      },
+      "teaching": {
+        "prompt": "A program is a named recipe you can run",
+        "script": "MIT's intro CS course is not a catalog of languages. It is computational thinking: break a job into steps a machine can follow. Hold that. A variable is a labeled box. The name stays. The value can change. x equals 3, then x equals x plus 1. The box named x now holds 4, not the text x plus 1. A conditional is a fork in the recipe. If the test is true, take this branch. If not, take the other. A loop is the same steps while a condition is still true. The easy miss is the stop. If the value the test reads never changes, the loop never ends. A function is a named recipe you can call again. You give it inputs, it does the steps, it can give a result back. Debugging is not shame. It is asking: which step did not match what I thought.",
+        "blocks": [
+          {
+            "id": "b1",
+            "kind": "heading",
+            "heading": "The idea",
+            "body": "Not a language. A way to write steps a machine can follow."
+          },
+          {
+            "id": "b2",
+            "kind": "concept",
+            "heading": "Computational thinking",
+            "body": "MIT 6.0001 starts here: break a job into precise steps. Python is the vehicle, not the point.",
+            "sourceId": "mit-60001"
+          },
+          {
+            "id": "b3",
+            "kind": "definition",
+            "heading": "Variable",
+            "body": "A labeled box. The name stays. The value can change.",
+            "sourceId": "mit-60001"
+          },
+          {
+            "id": "b4",
+            "kind": "example",
+            "heading": "x = 3, then x = x + 1",
+            "body": "The box named x now holds 4. It does not hold the text “x + 1”."
+          },
+          {
+            "id": "b5",
+            "kind": "definition",
+            "heading": "Conditional",
+            "body": "A fork. If the test is true, take this branch. If not, take the other."
+          },
+          {
+            "id": "b6",
+            "kind": "definition",
+            "heading": "Loop",
+            "body": "The same steps while a condition is still true. If the value the test reads never changes, the loop never ends.",
+            "sourceId": "mit-60001"
+          },
+          {
+            "id": "b7",
+            "kind": "analogy",
+            "heading": "Function",
+            "body": "A named recipe. You call it, pass inputs, get a result. You do not rewrite the steps each time."
+          },
+          {
+            "id": "b8",
+            "kind": "concept",
+            "heading": "A miss is a question",
+            "body": "Debug means: which step did not match what I thought. Not: I am bad at this.",
+            "sourceId": "mit-60001"
+          }
+        ]
+      },
+      "checks": [
+        {
+          "kind": "problem",
+          "phase": "check",
+          "skillId": "s1",
+          "prompt": "x = 3 then x = x + 1. What is in the box named x?",
+          "choices": ["3", "4", "x + 1 as text"],
+          "expected": "4"
+        },
+        {
+          "kind": "problem",
+          "phase": "check",
+          "skillId": "s3",
+          "prompt": "A loop never stops. What is the usual miss?",
+          "choices": [
+            "The variable name is too short",
+            "The stop condition never becomes true",
+            "You used a function"
+          ],
+          "expected": "The stop condition never becomes true"
+        },
+        {
+          "kind": "problem",
+          "phase": "check",
+          "skillId": "s5",
+          "subjective": true,
+          "prompt": "In two sentences: what is a function, in this module’s terms?",
+          "expected": "A function is a named recipe you can call again. You give it inputs and it runs the same steps.",
+          "rubric": "Pass if they say it is a named set of steps you can reuse, not a loop or a variable."
+        }
+      ]
+    }
+  ]
+}

@@ -8,8 +8,12 @@ export function normalize(text: string): string {
   return text.toLowerCase().replace(/\s+/g, " ").trim();
 }
 
+export function isLesson(card: Card): boolean {
+  return card.kind === "training" || card.kind === "teach" || card.phase === "training" || card.phase === "teach";
+}
+
 export function isDiagnostic(card: Card): boolean {
-  if (card.phase === "teach" || card.phase === "check" || card.phase === "refresher") {
+  if (isLesson(card) || card.phase === "check" || card.phase === "refresher") {
     return false;
   }
   return card.kind === "background" || card.kind === "chips" || card.kind === "problem";
@@ -29,6 +33,12 @@ export function answeredProblems(session: Session): number {
   ).length;
 }
 
+export function hasTraining(session: Session): boolean {
+  return session.cards.some(
+    (card) => (card.kind === "training" || card.phase === "training") && !card.retryOf,
+  );
+}
+
 export function hasTeach(session: Session): boolean {
   return session.cards.some((card) => card.kind === "teach" && card.phase === "teach" && !card.retryOf);
 }
@@ -46,8 +56,7 @@ export function checksDone(session: Session): boolean {
       !card.retryOf &&
       card.answer !== undefined,
   );
-  if (session.path === "life") return answered.length >= 1;
-  return answered.length >= 2;
+  return answered.length >= 3;
 }
 
 export function shouldStopBackground(session: Session, lastAnswer: string): boolean {
@@ -58,7 +67,7 @@ export function shouldStopBackground(session: Session, lastAnswer: string): bool
 }
 
 export function shouldEndDiagnostic(session: Session): boolean {
-  if (hasTeach(session)) return true;
+  if (hasTraining(session) || hasTeach(session)) return true;
   if (diagnosticOpenerCount(session) >= MAX_DIAGNOSTIC) return true;
   if (answeredProblems(session) >= 2 && backgroundCount(session) >= 1) return true;
   return false;
@@ -91,8 +100,18 @@ export function padSkills(skills: Skill[]): Skill[] {
 }
 
 export function gradeAnswer(card: Card, answer: string): boolean | undefined {
-  if (card.kind === "background" || card.kind === "chips" || card.kind === "teach") {
+  if (card.kind === "background" || card.kind === "chips" || isLesson(card)) {
     return undefined;
+  }
+  if (card.subjective) {
+    if (!card.expected) return undefined;
+    const got = normalize(answer);
+    const keys = normalize(card.expected)
+      .split(" ")
+      .filter((word) => word.length > 4);
+    const hits = keys.filter((word) => got.includes(word)).length;
+    if (got.length < 24) return false;
+    return hits >= Math.min(2, Math.max(1, keys.length - 2));
   }
   if (card.expected) {
     const got = normalize(answer);
@@ -161,10 +180,16 @@ export function clampIncoming(session: Session, incoming: Card[], lastAnswer: st
     if (isDiagnostic(card) && !card.retryOf && shouldEndDiagnostic(pretend()) && kind !== "teach") {
       continue;
     }
+    if ((kind === "training" || card.phase === "training") && hasTraining(pretend()) && !card.retryOf) {
+      continue;
+    }
+    if (kind === "teach" && !hasTraining(pretend()) && !card.retryOf) {
+      continue;
+    }
     if (kind === "teach" && card.phase === "teach" && hasTeach(pretend()) && !card.retryOf) {
       continue;
     }
-    const maxChecks = pretend().path === "life" ? 1 : 3;
+    const maxChecks = 3;
     if (
       (kind === "confirm" || card.phase === "check") &&
       !card.retryOf &&

@@ -1,7 +1,8 @@
 "use client";
 
 import { liveSkills } from "@/lib/rules";
-import type { Path, Session } from "@/lib/schema";
+import { estimateCues } from "@/lib/cues";
+import type { Session, WordCue } from "@/lib/schema";
 import { currentCard } from "@/lib/session";
 import { clearSession, loadSession, saveSession } from "@/lib/store";
 import Link from "next/link";
@@ -29,8 +30,11 @@ export function SessionView() {
   const [error, setError] = useState("");
   const [receipts, setReceipts] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [words, setWords] = useState<WordCue[]>([]);
+  const [currentTime, setCurrentTime] = useState(0);
   const spoken = useRef<Set<string>>(new Set());
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const objectUrl = useRef<string | null>(null);
 
   useEffect(() => {
     const loaded = loadSession();
@@ -53,8 +57,11 @@ export function SessionView() {
       spoken.current.add(cardId);
     }
     setSpeaking(true);
+    setCurrentTime(0);
+    setWords(estimateCues(text, 8));
     audioRef.current?.pause();
     window.speechSynthesis?.cancel();
+    if (objectUrl.current) URL.revokeObjectURL(objectUrl.current);
     try {
       const response = await fetch("/api/speak", {
         method: "POST",
@@ -62,16 +69,45 @@ export function SessionView() {
         body: JSON.stringify({ text }),
       });
       if (!response.ok) throw new Error("tts");
-      const blob = await response.blob();
+      const data = (await response.json()) as {
+        audio?: string;
+        type?: string;
+        duration?: number;
+        words?: WordCue[];
+      };
+      if (!data.audio) throw new Error("tts");
+      const bytes = Uint8Array.from(atob(data.audio), (ch) => ch.charCodeAt(0));
+      const blob = new Blob([bytes], { type: data.type || "audio/mpeg" });
       const url = URL.createObjectURL(blob);
+      objectUrl.current = url;
       const audio = new Audio(url);
       audioRef.current = audio;
-      audio.onended = () => setSpeaking(false);
+      if (data.words?.length) setWords(data.words);
+      else setWords(estimateCues(text, data.duration || 8));
+      audio.ontimeupdate = () => setCurrentTime(audio.currentTime);
+      audio.onended = () => {
+        setSpeaking(false);
+        setCurrentTime(audio.duration || data.duration || audio.currentTime);
+      };
       await audio.play();
     } catch {
       try {
         const utter = new SpeechSynthesisUtterance(text);
-        utter.onend = () => setSpeaking(false);
+        const fallback = estimateCues(text, Math.max(text.split(/\s+/).length * 0.38, 4));
+        setWords(fallback);
+        utter.onboundary = (event) => {
+          if (event.name === "word") {
+            const idx = fallback.findIndex((_, i) => {
+              const start = fallback.slice(0, i).reduce((n, w) => n + w.text.length, 0);
+              return event.charIndex <= start + fallback[i].text.length;
+            });
+            if (idx >= 0) setCurrentTime((fallback[idx].start + fallback[idx].end) / 2);
+          }
+        };
+        utter.onend = () => {
+          setSpeaking(false);
+          setCurrentTime(fallback.at(-1)?.end || 1);
+        };
         window.speechSynthesis.speak(utter);
       } catch {
         setSpeaking(false);
@@ -107,23 +143,10 @@ export function SessionView() {
     }
   }
 
-  async function override(path: Path) {
-    if (!session || busy || session.path === path) return;
-    setBusy(true);
-    setError("");
-    try {
-      const next = await post("/api/turn", { session, action: "override", path });
-      commit(next);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Override failed");
-    } finally {
-      setBusy(false);
-    }
-  }
+  const card = session ? currentCard(session) : undefined;
 
   if (!session) return null;
 
-  const card = currentCard(session);
   const canSkip = liveSkills(session).length > 0 && !card;
 
   return (
@@ -135,22 +158,9 @@ export function SessionView() {
               Stand
             </Link>
             <p className="goal-line">{session.goal}</p>
-          </div>
-          <div className="path-switch" role="group" aria-label="Path">
-            <button
-              type="button"
-              aria-pressed={session.path === "college"}
-              onClick={() => override("college")}
-            >
-              College
-            </button>
-            <button
-              type="button"
-              aria-pressed={session.path === "life"}
-              onClick={() => override("life")}
-            >
-              Do it now
-            </button>
+            {session.moduleTitle ? (
+              <p className="module-line">Module: {session.moduleTitle}</p>
+            ) : null}
           </div>
         </header>
 
@@ -158,8 +168,11 @@ export function SessionView() {
           {card ? (
             <CardView
               card={card}
+              goal={session.goal}
               busy={busy}
               speaking={speaking}
+              words={words}
+              currentTime={currentTime}
               onSubmit={answer}
               onSpeak={(text) => {
                 spoken.current.delete(card.id);
@@ -168,10 +181,11 @@ export function SessionView() {
             />
           ) : (
             <div className="done">
-              <h2>File is current.</h2>
+              <h2>That’s it for now.</h2>
               <p>
-                A slot is live only after a real check. Hit Skip 2 days for a refresher.
-                Miss rusts it. Hit keeps live.
+                {canSkip
+                  ? "Skip two days for a short refresher on a skill you passed."
+                  : "Start a new goal when you want another round."}
               </p>
             </div>
           )}

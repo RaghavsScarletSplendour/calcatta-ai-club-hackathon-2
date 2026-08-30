@@ -1,8 +1,17 @@
+import {
+  checkCards,
+  getModule,
+  matchModule,
+  moduleSkills,
+  teachingCard,
+  trainingCard,
+} from "./catalog";
 import type { Card, Memory, Path, Session, Skill, Step } from "./schema";
 import {
   answeredProblems,
   backgroundCount,
   hasTeach,
+  hasTraining,
   shouldEndDiagnostic,
   shouldStopBackground,
 } from "./rules";
@@ -14,27 +23,44 @@ function steps(items: [string, string][]): Step[] {
   return items.map(([title, body]) => ({ title, body, speak: `${title}. ${body}` }));
 }
 
+function withScript(card: Card): Card {
+  if (card.script) return card;
+  if (!card.steps?.length) return card;
+  return {
+    ...card,
+    script: card.steps.map((step) => step.speak || `${step.title}. ${step.body}`).join(" "),
+  };
+}
+
+export function hasLessonBody(card: Card): boolean {
+  const script = (card.script || "").replace(/[.\s]+/g, " ").trim();
+  if (script.length >= 12) return true;
+  if (card.blocks?.some((block) => (block.body || "").trim())) return true;
+  if (card.steps?.some((step) => (step.title || "").trim() || (step.body || "").trim())) return true;
+  return false;
+}
+
+export function fillHollowLesson(session: Session, card: Card): Card {
+  if (card.kind === "training" || card.phase === "training") {
+    return hasLessonBody(card) ? card : trainingFor(session);
+  }
+  if (card.kind === "teach" && (card.phase === "teach" || !card.phase)) {
+    return hasLessonBody(card) ? card : teachFor(session);
+  }
+  return card;
+}
+
 function skill(id: string, label: string): Skill {
   return { id, label, state: "empty", evidence: [] };
 }
 
-export function guessPath(goal: string): Path {
-  const g = goal.toLowerCase();
-  if (
-    /(tire|tyre|oil|cook|change a|how to|fix|repair|knot|bike|jump.?start)/.test(g)
-  ) {
-    return "life";
-  }
-  return "college";
-}
-
-export function rehearsalKind(goal: string): "stats" | "cs" | "tire" | null {
+export function rehearsalKind(goal: string): "stats" | "cs" | "psych" | null {
   const g = goal.toLowerCase();
   if (/(stat|mean|median|probability|variance)/.test(g)) return "stats";
   if (/(intro cs|computer science|coding|programming|python|javascript)/.test(g)) {
     return "cs";
   }
-  if (/(tire|tyre)/.test(g)) return "tire";
+  if (matchModule(goal)?.subject === "psychology") return "psych";
   return null;
 }
 
@@ -45,7 +71,6 @@ export function fallbackCompile(goal: string): {
   brain: string;
 } {
   const kind = rehearsalKind(goal);
-  const path = kind === "tire" ? "life" : guessPath(goal);
   const first: Card = {
     id: "c1",
     kind: "background",
@@ -53,6 +78,15 @@ export function fallbackCompile(goal: string): {
     phase: "diagnostic",
     skillId: "s1",
   };
+  const matched = matchModule(goal);
+  if (matched) {
+    return {
+      path: "college",
+      brain: `catalog:${matched.id}`,
+      first,
+      skills: moduleSkills(matched),
+    };
+  }
 
   if (kind === "stats") {
     return {
@@ -84,23 +118,8 @@ export function fallbackCompile(goal: string): {
       ],
     };
   }
-  if (kind === "tire") {
-    return {
-      path: "life",
-      brain: "fallback:tire",
-      first,
-      skills: [
-        skill("s1", "Safety first"),
-        skill("s2", "Loosen before jack"),
-        skill("s3", "Jack point"),
-        skill("s4", "Swap the wheel"),
-        skill("s5", "Star torque"),
-        skill("s6", "Keep it live"),
-      ],
-    };
-  }
   return {
-    path,
+    path: "college",
     brain: "fallback:generic",
     first,
     skills: [
@@ -114,11 +133,58 @@ export function fallbackCompile(goal: string): {
   };
 }
 
+function catalogFor(session: Session) {
+  return getModule(session.moduleId) || matchModule(session.goal);
+}
+
+function trainingFor(session: Session): Card {
+  const mod = catalogFor(session);
+  if (mod) {
+    const card = trainingCard(mod);
+    card.id = nextCardId(session);
+    return card;
+  }
+  return {
+    id: nextCardId(session),
+    kind: "training",
+    phase: "training",
+    skillId: "s1",
+    minutes: 1,
+    prompt: "Hold one idea, then check it",
+    script:
+      "Do not collect a syllabus. Hold one idea you can use. Name the outcome. Watch the easy miss. Then a short check that you can actually do.",
+    blocks: [
+      {
+        id: "t1",
+        kind: "heading",
+        heading: "One idea",
+        body: "Name the outcome before you collect topics.",
+      },
+      {
+        id: "t2",
+        kind: "concept",
+        heading: "The easy miss",
+        body: "The step people skip is usually the definition or the stop condition.",
+      },
+    ],
+    steps: steps([
+      ["Hold one idea", "Name the outcome before you collect topics."],
+      ["Then a check", "A short check that you can actually do."],
+    ]),
+  };
+}
+
 function teachFor(session: Session): Card {
+  const mod = catalogFor(session);
+  if (mod) {
+    const card = teachingCard(mod);
+    card.id = nextCardId(session);
+    return card;
+  }
   const kind = rehearsalKind(session.goal);
   const id = nextCardId(session);
   if (kind === "stats") {
-    return {
+    return withScript({
       id,
       kind: "teach",
       phase: "teach",
@@ -129,10 +195,10 @@ function teachFor(session: Session): Card {
         ["The table", "Incomes 20, 22, 24, 26, 200. Mean looks rich. Median is 24."],
         ["The ask", "Always ask: compared to what, and is one point dragging this?"],
       ]),
-    };
+    });
   }
   if (kind === "cs") {
-    return {
+    return withScript({
       id,
       kind: "teach",
       phase: "teach",
@@ -143,74 +209,33 @@ function teachFor(session: Session): Card {
         ["Repeat", "A loop runs the same steps while a condition is still true."],
         ["Stop", "The easy miss is forgetting the stop. Infinite loops are missing exits."],
       ]),
-    };
-  }
-  if (kind === "tire") {
-    return {
-      id,
-      kind: "teach",
-      phase: "teach",
-      skillId: "s2",
-      prompt: "How to change a tire — three steps, in order.",
-      steps: steps([
-        ["Before the jack", "Park, hazards, chock. Loosen the nuts while the wheel is still on the ground."],
-        ["Swap", "Jack at the marked point. Take the wheel off. Seat the spare on the studs."],
-        ["Down, then tight", "Lower the car, then tighten in a star. Torque after it is on the ground."],
-      ]),
-    };
+    });
   }
   const goal = session.goal;
-  return {
+  return withScript({
     id,
     kind: "teach",
     phase: "teach",
     skillId: "s2",
-    prompt: session.path === "life" ? `How to: ${goal}` : `Three minutes on: ${goal}`,
+    prompt: `Five minutes on: ${goal}`,
     steps: steps([
       ["Name the outcome", `What “done” looks like for: ${goal}.`],
       ["The easy miss", "The step people skip is usually the safety or the definition."],
       ["The check", "A check you can do in 10 seconds to know it worked."],
     ]),
-  };
+  });
 }
 
 function checksFor(session: Session): Card[] {
+  const mod = catalogFor(session);
+  if (mod) {
+    return checkCards(mod).map((card, i) => ({
+      ...card,
+      id: `c${session.cards.length + i + 1}`,
+    }));
+  }
   const kind = rehearsalKind(session.goal);
   const start = session.cards.length;
-  if (session.path === "life") {
-    if (kind === "tire") {
-      return [
-        {
-          id: `c${start + 1}`,
-          kind: "confirm",
-          phase: "check",
-          skillId: "s2",
-          prompt: "When do you loosen the lug nuts?",
-          choices: [
-            "After the car is in the air",
-            "While the wheel is still on the ground",
-            "After you put the spare on",
-          ],
-          expected: "While the wheel is still on the ground",
-        },
-      ];
-    }
-    return [
-      {
-        id: `c${start + 1}`,
-        kind: "confirm",
-        phase: "check",
-        skillId: "s5",
-        prompt: `Which step is easiest to get wrong for: ${session.goal}?`,
-        choices: [
-          "The first safety step",
-          "The order of the core move",
-          "Celebrating at the end",
-        ],
-        expected: "The order of the core move",
-      },
-    ];
-  }
   if (kind === "stats") {
     return [
       {
@@ -234,6 +259,16 @@ function checksFor(session: Session): Card[] {
           "Drop the low scores",
         ],
         expected: "Ask how they were chosen",
+      },
+      {
+        id: `c${start + 3}`,
+        kind: "problem",
+        phase: "check",
+        skillId: "s1",
+        subjective: true,
+        prompt: "In two sentences: when should you prefer the median over the mean?",
+        expected: "When an extreme value pulls the mean, the median is a better typical value.",
+        rubric: "Pass if they mention outliers or a pulled mean.",
       },
     ];
   }
@@ -261,6 +296,16 @@ function checksFor(session: Session): Card[] {
         choices: ["A labeled value that can change", "The whole program", "Only numbers"],
         expected: "A labeled value that can change",
       },
+      {
+        id: `c${start + 3}`,
+        kind: "problem",
+        phase: "check",
+        skillId: "s3",
+        subjective: true,
+        prompt: "In two sentences: what makes a loop stop?",
+        expected: "A loop stops when its condition becomes false. The usual miss is never changing the value that condition reads.",
+        rubric: "Pass if they mention a stop condition or an exit.",
+      },
     ];
   }
   return [
@@ -285,6 +330,16 @@ function checksFor(session: Session): Card[] {
       prompt: "After a miss, what does this coach do?",
       choices: ["Loop forever", "Reteach, one easier retry, then move", "Mark it live anyway"],
       expected: "Reteach, one easier retry, then move",
+    },
+    {
+      id: `c${start + 3}`,
+      kind: "problem",
+      phase: "check",
+      skillId: "s2",
+      subjective: true,
+      prompt: `In two sentences: what is the core move for ${session.goal}?`,
+      expected: "Name the outcome, then do the first real step, then check it.",
+      rubric: "Pass if they name a first real step, not a syllabus.",
     },
   ];
 }
@@ -321,31 +376,59 @@ function diagnosticProblem(session: Session): Card {
           expected: "Friends are a convenience sample, not the campus",
         };
   }
-  if (kind === "tire") {
-    return {
-      id: nextCardId(session),
-      kind: "problem",
-      phase: "diagnostic",
-      skillId: "s1",
-      prompt: "Before you touch the spare, what comes first?",
-      choices: [
-        "Jack the car immediately",
-        "Park safe, hazards, and stop the car rolling",
-        "Take all the nuts off",
-      ],
-      expected: "Park safe, hazards, and stop the car rolling",
-    };
+  if (kind === "psych") {
+    return n === 0
+      ? {
+          id: nextCardId(session),
+          kind: "problem",
+          phase: "diagnostic",
+          skillId: "s1",
+          prompt: "Psychology, in the open courses we cite, is the scientific study of what?",
+          choices: [
+            "Only mental illness",
+            "Mind and behavior",
+            "Personality quizzes",
+          ],
+          expected: "Mind and behavior",
+        }
+      : {
+          id: nextCardId(session),
+          kind: "problem",
+          phase: "diagnostic",
+          skillId: "s2",
+          prompt: "If a grid makes you see dots that are not printed, what is that showing?",
+          choices: [
+            "The page is broken",
+            "Perception constructs what you see",
+            "You need glasses",
+          ],
+          expected: "Perception constructs what you see",
+        };
   }
   if (kind === "cs") {
-    return {
-      id: nextCardId(session),
-      kind: "problem",
-      phase: "diagnostic",
-      skillId: "s1",
-      prompt: "x = 3 then x = x + 1. What is in the box named x?",
-      choices: ["3", "4", "x + 1 as text"],
-      expected: "4",
-    };
+    return n === 0
+      ? {
+          id: nextCardId(session),
+          kind: "problem",
+          phase: "diagnostic",
+          skillId: "s1",
+          prompt: "x = 3 then x = x + 1. What is in the box named x?",
+          choices: ["3", "4", "x + 1 as text"],
+          expected: "4",
+        }
+      : {
+          id: nextCardId(session),
+          kind: "problem",
+          phase: "diagnostic",
+          skillId: "s3",
+          prompt: "A loop never stops. What is the usual miss?",
+          choices: [
+            "The variable name is too short",
+            "The stop condition never becomes true",
+            "You used a function",
+          ],
+          expected: "The stop condition never becomes true",
+        };
   }
   return {
     id: nextCardId(session),
@@ -411,11 +494,15 @@ export function fallbackAfterAnswer(session: Session, answered: Card): Next {
     return { nextCards: reteach(session, answered), memoryAdds };
   }
 
+  if ((answered.kind === "training" || answered.phase === "training") && !hasTeach(session)) {
+    return { nextCards: [teachFor(session)], memoryAdds };
+  }
+
   if (answered.kind === "teach" && answered.phase === "teach") {
     return { nextCards: checksFor(session), memoryAdds };
   }
 
-  if (!hasTeach(session) && !shouldEndDiagnostic(session)) {
+  if (!hasTraining(session) && !hasTeach(session) && !shouldEndDiagnostic(session)) {
     if ((answered.kind === "background" || answered.kind === "chips") && !shouldStopBackground(session, answered.answer || "")) {
       if ((answered.answer || "").trim().length < 40 && backgroundCount(session) < 3) {
         return { nextCards: [chips(session)], memoryAdds };
@@ -424,6 +511,10 @@ export function fallbackAfterAnswer(session: Session, answered: Card): Next {
     if (!shouldEndDiagnostic(session)) {
       return { nextCards: [diagnosticProblem(session)], memoryAdds };
     }
+  }
+
+  if (!hasTraining(session)) {
+    return { nextCards: [trainingFor(session)], memoryAdds };
   }
 
   if (!hasTeach(session)) {
@@ -435,10 +526,37 @@ export function fallbackAfterAnswer(session: Session, answered: Card): Next {
       (card.phase === "check" || card.kind === "confirm") && card.answer === undefined,
   );
   if (!pendingCheck && answered.phase === "diagnostic") {
-    return { nextCards: [teachFor(session)], memoryAdds };
+    return { nextCards: [trainingFor(session)], memoryAdds };
   }
 
   return { nextCards: [], memoryAdds };
+}
+
+export function catalogSkip(session: Session): Next {
+  const mod = catalogFor(session);
+  if (!mod) return fallbackSkip(session);
+  const live = session.skills.find((skill) => skill.state === "live") || session.skills[0];
+  const checks = checkCards(mod);
+  const match = checks.find((check) => check.skillId === live.id) || checks[0];
+  const card: Card = {
+    id: nextCardId(session),
+    kind: "refresher",
+    phase: "refresher",
+    skillId: live.id,
+    prompt: `Two days later. ${match.prompt}`,
+    choices: match.choices,
+    expected: match.expected,
+    subjective: match.subjective,
+    rubric: match.rubric,
+    moduleId: mod.id,
+  };
+  return {
+    nextCards: [card],
+    memoryAdds: {
+      promised: [`Practice ${live.label} after two days`],
+      stand: [`Time skip on ${live.label}`],
+    },
+  };
 }
 
 export function fallbackSkip(session: Session): Next {
@@ -454,20 +572,6 @@ export function fallbackSkip(session: Session): Next {
       prompt: "Two days later. Scores 4, 5, 5, 6, 40. Typical value?",
       choices: ["The mean", "The median", "40"],
       expected: "The median",
-    };
-  } else if (kind === "tire") {
-    card = {
-      id: nextCardId(session),
-      kind: "refresher",
-      phase: "refresher",
-      skillId: live.id,
-      prompt: "Two days later. You already jacked the car. Nuts are still tight. What went wrong?",
-      choices: [
-        "You should loosen nuts on the ground, before jacking",
-        "You forgot the spare",
-        "Nothing — tight is safe",
-      ],
-      expected: "You should loosen nuts on the ground, before jacking",
     };
   } else {
     card = {
@@ -494,5 +598,7 @@ export function fallbackSkip(session: Session): Next {
 }
 
 export function fallbackOverrideTeach(session: Session): Card[] {
-  return [teachFor(session)];
+  if (!hasTraining(session)) return [trainingFor(session)];
+  if (!hasTeach(session)) return [teachFor(session)];
+  return checksFor(session);
 }

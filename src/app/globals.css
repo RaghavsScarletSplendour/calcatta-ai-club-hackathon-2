@@ -265,6 +265,101 @@ a { color: inherit; }
   margin: 0 0 18px;
 }
 
+.card.lesson { width: min(680px, 100%); }
+
+.module-line {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.blocks { display: grid; gap: 12px; margin: 0 0 18px; }
+.block h3 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  letter-spacing: 0.01em;
+}
+.block p { margin: 0; color: var(--muted); }
+.block-heading h3 {
+  font-family: var(--font-display);
+  font-size: 18px;
+}
+.block-definition h3 { color: var(--red); }
+.cite-mark {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--red);
+  margin-left: 3px;
+}
+
+.script-panel {
+  border-top: 1px solid var(--rule);
+  padding-top: 14px;
+  margin: 0 0 16px;
+}
+.transcript {
+  font-family: var(--font-display);
+  font-size: 22px;
+  line-height: 1.55;
+  margin: 0;
+}
+.word {
+  color: #b4ab9c;
+  transition: color 80ms linear, background-color 80ms linear;
+}
+.word.spoken { color: var(--ink); }
+.word.active {
+  color: var(--red);
+  background: var(--red-dim);
+  border-radius: 3px;
+}
+
+.sources {
+  margin: 0 0 16px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--rule);
+}
+.sources h4 {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 8px;
+}
+.sources ol { margin: 0; padding-left: 18px; }
+.sources li { margin: 0 0 6px; font-size: 13px; color: var(--muted); }
+.sources a { text-decoration: underline; text-underline-offset: 2px; }
+.license { color: #9a9184; }
+
+.explain {
+  margin: 0 0 8px;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid var(--rule);
+}
+.explain-kicker {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 8px;
+}
+.explain-turn { margin: 0 0 10px; }
+.explain-q { margin: 0 0 4px; color: var(--muted); font-size: 13px; }
+.explain-turn h4 { margin: 0 0 4px; font-size: 14px; }
+.explain-turn p { margin: 0; color: var(--ink); }
+.explain-form { display: flex; gap: 8px; }
+.explain-form input {
+  flex: 1;
+  border: 1px solid var(--rule);
+  background: var(--paper-2);
+  padding: 8px 10px;
+  outline: none;
+}
+.explain-form input:focus { border-color: var(--ink); }
+
 .steps { display: grid; gap: 14px; margin: 0 0 18px; }
 .step {
   display: grid;
@@ -324,6 +419,11 @@ textarea.answer {
   outline: none;
 }
 textarea.answer:focus { border-color: var(--ink); }
+textarea.answer:read-only,
+.explain-form input:read-only,
+.goal-form input:read-only {
+  cursor: default;
+}
 
 .didit {
   display: flex;

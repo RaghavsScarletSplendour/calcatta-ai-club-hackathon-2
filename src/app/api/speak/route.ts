@@ -9,11 +9,11 @@ export async function POST(req: Request) {
     if (!result) {
       return Response.json({ error: "No voice" }, { status: 500 });
     }
-    return new Response(new Uint8Array(result.audio), {
-      headers: {
-        "Content-Type": result.type,
-        "Cache-Control": "no-store",
-      },
+    return Response.json({
+      audio: result.audio.toString("base64"),
+      type: result.type,
+      duration: result.duration,
+      words: result.words,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Speak failed";
