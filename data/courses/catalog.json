@@ -191,7 +191,115 @@
           "expected": "Automaticity lets thinking, feeling, and acting run without a meeting, which is fast and useful, but it can make you feel sure even when the mind constructed a wrong picture.",
           "rubric": "Pass if they name a benefit (speed, no effort, runs without a meeting) AND a cost (unchecked certainty, constructed error, peril)."
         }
-      ]
+      ],
+      "assessments": {
+        "s1": {
+          "recognition": {
+            "prompt": "Which sentence is the core definition these open courses use for psychology?",
+            "options": [
+              {
+                "text": "Psychology is the scientific study of mind and behavior",
+                "isCorrect": true,
+                "explanation": "This is the exact definition MIT and OpenStax both open with. Psyche means life, logos means explanation."
+              },
+              {
+                "text": "Psychology is mostly about diagnosing mental illness",
+                "isCorrect": false,
+                "misconceptionTag": "clinical_only",
+                "explanation": "Clinical work is one branch. The field's own definition is broader: mind and behavior in general, not only disorder."
+              },
+              {
+                "text": "Psychology is a set of tips for a happier life",
+                "isCorrect": false,
+                "misconceptionTag": "self_help",
+                "explanation": "Self-help content borrows from psychology, but the field itself is a science with evidence and methods, not a tips list."
+              }
+            ],
+            "microCorrections": {
+              "clinical_only": "Clinical psychology studies disorder, but the field's core definition is wider: the scientific study of mind and behavior in general, healthy or not.",
+              "self_help": "Self-help sometimes cites psychology, but the field is defined by its method, evidence and study, not by handing out life tips."
+            }
+          },
+          "application": {
+            "prompt": "A news article says 'psychologists proved staring at a photo of your ex for 10 minutes cures heartbreak,' with no study cited. Applying the course's definition, what is the strongest reaction?",
+            "options": [
+              {
+                "text": "Ask what evidence and method back the claim, since psychology means scientific study, not folk wisdom",
+                "isCorrect": true,
+                "explanation": "Right. The definition itself, scientific study of mind and behavior, is the test: no cited evidence, no real psychological claim."
+              },
+              {
+                "text": "Trust it, since it uses the word psychologist",
+                "isCorrect": false,
+                "explanation": "Using the word does not make a claim scientific. The definition requires actual study behind it."
+              },
+              {
+                "text": "Reject it because it is about heartbreak, not real psychology",
+                "isCorrect": false,
+                "explanation": "Emotion and relationships are legitimate psychology topics. The problem is missing evidence, not the topic."
+              }
+            ]
+          },
+          "generation": {
+            "prompt": "Explain to a 12-year-old what psychology actually studies, using your own example.",
+            "rubricCriteria": ["core_accuracy", "own_words", "concreteness"],
+            "coreIdea": "Psychology is the scientific study of mind and behavior, not just mental illness or self-help tips, but how people think, feel, and act, backed by evidence."
+          }
+        },
+        "s2": {
+          "recognition": {
+            "prompt": "The Hermann grid (black dots seeming to flash at the crossings) is used in lecture 1 to show what?",
+            "options": [
+              {
+                "text": "That perception constructs what you see, it does not just record it",
+                "isCorrect": true,
+                "explanation": "Correct — the dots are not printed. Your visual system builds them, which is the whole point of the demo."
+              },
+              {
+                "text": "That printed pages contain hidden ink",
+                "isCorrect": false,
+                "misconceptionTag": "literal_illusion",
+                "explanation": "The dots are not physically on the page in any form, hidden or not. The point is that perception builds an experience, it is not a hidden-object puzzle."
+              },
+              {
+                "text": "That attention can hold every detail of a scene at once",
+                "isCorrect": false,
+                "misconceptionTag": "attention_unlimited",
+                "explanation": "This gets the lesson backwards. The grid is about perception constructing content, not about attention holding everything at once."
+              }
+            ],
+            "microCorrections": {
+              "literal_illusion": "The dots you see are not hidden on the page in any form. Your visual system generates them. The demo shows that perception constructs experience, not that it hides secrets.",
+              "attention_unlimited": "The lecture's actual point about attention is that it is a bottleneck: you see only what got selected, not everything at once. The Hermann grid is about construction, not unlimited capacity."
+            }
+          },
+          "application": {
+            "prompt": "You glance at a crowded room and instantly feel like something is 'off,' even though you can't say what changed. Which idea from the lecture best explains why your brain reacts before you can name the reason?",
+            "options": [
+              {
+                "text": "Perception actively constructs the scene, so a mismatch can register before conscious naming catches up",
+                "isCorrect": true,
+                "explanation": "Right. Since perception is construction, not recording, a built mismatch can surface as a feeling before you can name it."
+              },
+              {
+                "text": "You must have a perfect memory of the room from before",
+                "isCorrect": false,
+                "explanation": "The lecture's point is the opposite: memory and attention are limited, not perfect. That is not what explains the reaction."
+              },
+              {
+                "text": "It only means you are anxious",
+                "isCorrect": false,
+                "explanation": "Possible in general, but it skips the course's actual concept: a built perception can flag a mismatch before you consciously identify it."
+              }
+            ]
+          },
+          "generation": {
+            "prompt": "Give a real example from your own life where what you perceived turned out to be your mind constructing something, not a direct recording.",
+            "rubricCriteria": ["core_accuracy", "own_words", "concreteness"],
+            "coreIdea": "Perception is active construction, not passive recording, like the Hermann grid's phantom dots, so what you 'see' isn't a direct copy of the world."
+          }
+        }
+      }
     },
     {
       "id": "psych-learning",
@@ -375,7 +483,115 @@
           "expected": "Learned helplessness: the stored prediction is that nothing I do changes the outcome, so trying is useless even when a door is open.",
           "rubric": "Pass if they name learned helplessness (or a close paraphrase) and state that the person learned outcomes do not depend on their actions."
         }
-      ]
+      ],
+      "assessments": {
+        "s1": {
+          "recognition": {
+            "prompt": "In Pavlov's setup, what did the dog actually learn?",
+            "options": [
+              {
+                "text": "That a tone predicts food",
+                "isCorrect": true,
+                "explanation": "Right. The tone became a predictor of food, which is the whole mechanism of classical conditioning."
+              },
+              {
+                "text": "How to salivate on command like a trick",
+                "isCorrect": false,
+                "misconceptionTag": "voluntary_trick",
+                "explanation": "Salivating is a reflex, not a trained trick the dog performs on purpose. The dog learned an association, not a voluntary act."
+              },
+              {
+                "text": "That the tone itself contains food",
+                "isCorrect": false,
+                "misconceptionTag": "literal_association",
+                "explanation": "The tone is just a signal, not a physical source of food. It becomes a predictor of food arriving, not food itself."
+              }
+            ],
+            "microCorrections": {
+              "voluntary_trick": "Salivation here is a reflex, an automatic response, not a trick the dog chooses to perform. Classical conditioning changes what triggers a reflex, not what the animal decides to do.",
+              "literal_association": "The tone doesn't become food or contain it. It becomes a predictor, a signal that food is coming. That is the whole mechanism: a neutral cue starts to forecast an outcome."
+            }
+          },
+          "application": {
+            "prompt": "A child feels nauseous every time they smell a specific cologne, because they once got very sick at a party where someone wore it. This is closest to:",
+            "options": [
+              {
+                "text": "Classical conditioning: a neutral cue, the smell, became linked to an unpleasant outcome, nausea",
+                "isCorrect": true,
+                "explanation": "Right. A previously neutral cue got paired with an automatic reaction until it could trigger that reaction alone."
+              },
+              {
+                "text": "Operant conditioning: the child is being rewarded for avoiding the smell",
+                "isCorrect": false,
+                "explanation": "Operant conditioning is about consequences following a chosen behavior. Here nothing was chosen: the smell got linked to an automatic reaction, which is classical conditioning."
+              },
+              {
+                "text": "Discrimination: the child learned to tell smells apart",
+                "isCorrect": false,
+                "explanation": "Discrimination is about responding differently to similar cues. This example is one cue getting paired with a reaction, the conditioning itself, not the fine-tuning step."
+              }
+            ]
+          },
+          "generation": {
+            "prompt": "Give a real example of classical conditioning from your own life or work.",
+            "rubricCriteria": ["core_accuracy", "own_words", "concreteness"],
+            "coreIdea": "Classical conditioning is when a neutral cue gets paired with an automatic response until the cue alone triggers that response, a predictor forms, not a chosen behavior."
+          }
+        },
+        "s2": {
+          "recognition": {
+            "prompt": "Thorndike's cat got out of a puzzle box faster over repeated tries. What does that demonstrate?",
+            "options": [
+              {
+                "text": "Behavior that is followed by a good outcome becomes more likely",
+                "isCorrect": true,
+                "explanation": "Right. Escape reinforced the move that produced it, so that move became more likely next time."
+              },
+              {
+                "text": "The cat memorized the exact box like a map",
+                "isCorrect": false,
+                "misconceptionTag": "cognitive_map",
+                "explanation": "Thorndike's point wasn't a mental map. It was a move getting reinforced by its consequence, escape, so that move became more likely."
+              },
+              {
+                "text": "The cat is simply born knowing how to escape boxes",
+                "isCorrect": false,
+                "misconceptionTag": "innate_skill",
+                "explanation": "The behavior clearly improved with repetition, which rules out 'born knowing it.' A successful action got reinforced by its consequence."
+              }
+            ],
+            "microCorrections": {
+              "cognitive_map": "Thorndike's experiment isn't about the cat memorizing a layout. It's about a specific action getting reinforced because it was followed by escape, making that action more likely next time.",
+              "innate_skill": "The behavior clearly improved with repetition, which rules out 'the cat was just born knowing it.' What changed is that a successful action got reinforced by its consequence."
+            }
+          },
+          "application": {
+            "prompt": "A manager notices that employees who speak up in meetings get praised publicly, and now more employees are speaking up. This best illustrates:",
+            "options": [
+              {
+                "text": "Operant conditioning: a behavior, speaking up, is reinforced by a consequence, praise, so it increases",
+                "isCorrect": true,
+                "explanation": "Right. A chosen behavior increased because it was followed by a reinforcing consequence."
+              },
+              {
+                "text": "Classical conditioning: the meeting itself has become a predictor of praise",
+                "isCorrect": false,
+                "explanation": "Close, but the mechanism here is a chosen behavior being strengthened by its consequence, not a neutral cue becoming a predictor of an automatic reaction."
+              },
+              {
+                "text": "Generalization: employees are copying each other's tone of voice",
+                "isCorrect": false,
+                "explanation": "The example is about a behavior increasing because of a consequence, not a response spreading to similar cues."
+              }
+            ]
+          },
+          "generation": {
+            "prompt": "What would go wrong if you didn't understand operant conditioning?",
+            "rubricCriteria": ["core_accuracy", "own_words", "concreteness"],
+            "coreIdea": "Operant conditioning means behavior is shaped by its consequences: reinforced behavior increases, punished or ignored behavior decreases. Missing this, you might reward the wrong things by accident or miss why a behavior keeps happening."
+          }
+        }
+      }
     },
     {
       "id": "cs-intro",
@@ -525,7 +741,115 @@
           "expected": "A function is a named recipe you can call again. You give it inputs and it runs the same steps.",
           "rubric": "Pass if they say it is a named set of steps you can reuse, not a loop or a variable."
         }
-      ]
+      ],
+      "assessments": {
+        "s1": {
+          "recognition": {
+            "prompt": "x = 3 then x = x + 1. What is in the box named x?",
+            "options": [
+              {
+                "text": "4",
+                "isCorrect": true,
+                "explanation": "Right. The right side is computed as math first, so x is reassigned to the number 4."
+              },
+              {
+                "text": "x + 1 as text",
+                "isCorrect": false,
+                "misconceptionTag": "string_confusion",
+                "explanation": "The right side of '=' is evaluated as math before being stored. The box holds the number 4, never the literal text 'x + 1'."
+              },
+              {
+                "text": "3, unchanged",
+                "isCorrect": false,
+                "misconceptionTag": "no_reassignment",
+                "explanation": "Assignment replaces the old value. The second line overwrites x with a new number, it doesn't leave the old 3 in place."
+              }
+            ],
+            "microCorrections": {
+              "string_confusion": "The right side of '=' is evaluated first, as math, before being stored. So x becomes the number 4, never the literal text 'x + 1'.",
+              "no_reassignment": "Assigning to a variable replaces its old value. After 'x = x + 1', the box named x holds a new number, 4. The old 3 is gone."
+            }
+          },
+          "application": {
+            "prompt": "You're tracking a running total of points in a game: total = 0, then every time a player scores you run total = total + points. After scores of 5, 3, and 2, what's the core reason this pattern works?",
+            "options": [
+              {
+                "text": "Each run reads the current value in the box, adds to it, then overwrites the box with the new value",
+                "isCorrect": true,
+                "explanation": "Right. The variable holds one current value; each step reads it, adds, then overwrites it."
+              },
+              {
+                "text": "The variable remembers every past value it ever held",
+                "isCorrect": false,
+                "explanation": "A variable only holds its current value, it doesn't keep a history. The pattern works because each step reads then overwrites."
+              },
+              {
+                "text": "The program recalculates all three scores from scratch every time you check total",
+                "isCorrect": false,
+                "explanation": "There's no recalculation from the original scores. Each step just updates the single stored value, which is why the variable pattern is efficient."
+              }
+            ]
+          },
+          "generation": {
+            "prompt": "Explain to a 12-year-old what a variable is, using your own example.",
+            "rubricCriteria": ["core_accuracy", "own_words", "concreteness"],
+            "coreIdea": "A variable is a named, labeled box that holds one value at a time. The name stays the same, but the value inside can be replaced by reassignment."
+          }
+        },
+        "s2": {
+          "recognition": {
+            "prompt": "A recipe says: 'If the oven is preheated, put the tray in. Otherwise, wait 5 minutes.' Which idea from the lesson does this map to?",
+            "options": [
+              {
+                "text": "A conditional, a fork in the recipe based on a test",
+                "isCorrect": true,
+                "explanation": "Right. It's a one-time yes/no fork, which is exactly what a conditional is."
+              },
+              {
+                "text": "A loop, the same steps repeating until a test is true",
+                "isCorrect": false,
+                "misconceptionTag": "loop_confusion",
+                "explanation": "There's no repetition here. This is a one-time fork, do A or do B, which is a conditional, not a loop."
+              },
+              {
+                "text": "A function, a named set of steps you can call again",
+                "isCorrect": false,
+                "misconceptionTag": "function_confusion",
+                "explanation": "There's no reusable named recipe being called here. This is a single yes/no branch, which is a conditional, not a function."
+              }
+            ],
+            "microCorrections": {
+              "loop_confusion": "A loop repeats the same steps while a condition stays true. This recipe step only branches once, preheated or not, with no repetition, so it's a conditional, not a loop.",
+              "function_confusion": "A function is a reusable named set of steps you call again and again. This is a single one-time fork in the recipe, which is exactly what a conditional is."
+            }
+          },
+          "application": {
+            "prompt": "A program should charge a customer full price if they have no coupon, and a discounted price if they do. What is the simplest correct way to describe this in the course's terms?",
+            "options": [
+              {
+                "text": "A conditional: if a coupon is present, take the discount branch, otherwise take the full-price branch",
+                "isCorrect": true,
+                "explanation": "Right. The program checks once and picks one of two branches, which is exactly a conditional."
+              },
+              {
+                "text": "A loop that keeps checking coupons until one works",
+                "isCorrect": false,
+                "explanation": "Nothing here repeats. The program checks the coupon once and picks a branch, which is a conditional, not a loop."
+              },
+              {
+                "text": "A variable that stores the final price directly",
+                "isCorrect": false,
+                "explanation": "A variable can hold the final price, but the decision of which price to use is made by a conditional fork, not by the variable itself."
+              }
+            ]
+          },
+          "generation": {
+            "prompt": "Give a real example of a conditional, an if / otherwise fork, from your own life or work.",
+            "rubricCriteria": ["core_accuracy", "own_words", "concreteness"],
+            "coreIdea": "A conditional is a fork in the steps: if a test is true, take one branch, if not, take the other. It picks between paths, it does not repeat steps."
+          }
+        }
+      }
     }
   ]
 }

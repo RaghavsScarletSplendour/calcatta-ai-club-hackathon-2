@@ -1,6 +1,7 @@
 import type { Card, Session } from "./schema";
 import { pushReceipts } from "./alchemyst";
 import { brainCompile, brainSkip, brainTurn } from "./brain";
+import { assessKindFor, confidenceFor, revealCard, scoreGeneration } from "./assessment";
 import {
   catalogSkip,
   fallbackAfterAnswer,
@@ -26,10 +27,9 @@ import {
 } from "./rules";
 import { bump, cloneSession, currentCard, newSession, pushEvent } from "./session";
 
-function recordAnswer(session: Session, card: Card, answer: string, didIt?: boolean): number {
+function recordAnswer(session: Session, card: Card, answer: string): number {
   card.answer = answer;
-  if (didIt) card.didIt = true;
-  const event = pushEvent(session, "answer", { answer, didIt }, card.id);
+  const event = pushEvent(session, "answer", { answer }, card.id);
   card.answerEventId = event.id;
   return event.id;
 }
@@ -47,12 +47,9 @@ function ensureLesson(session: Session): void {
 }
 
 function ensureChecks(session: Session, justAnswered: Card): void {
-  if (justAnswered.kind !== "teach" || justAnswered.phase !== "teach") return;
+  if (currentCard(session)) return;
+  if (!isAssessmentPivot(justAnswered)) return;
   if (checksDone(session)) return;
-  const openCheck = session.cards.some(
-    (card) => (card.phase === "check" || card.kind === "confirm") && card.answer === undefined,
-  );
-  if (openCheck) return;
   const fb = fallbackAfterAnswer(session, justAnswered);
   attachNext(session, fb.nextCards, justAnswered.answer || "");
 }
@@ -64,9 +61,29 @@ function pruneFinished(session: Session): void {
   );
 }
 
+function isAssessmentPivot(card: Card): boolean {
+  return (
+    card.kind === "training" ||
+    card.kind === "teach" ||
+    card.phase === "confidence" ||
+    card.phase === "recognition" ||
+    card.phase === "application" ||
+    card.phase === "generation" ||
+    card.phase === "reveal"
+  );
+}
+
 function applyGrade(card: Card, answer: string, modelCorrect?: boolean): void {
+  if (card.phase === "reveal") return;
   const local = gradeAnswer(card, answer);
-  if (card.kind === "background" || card.kind === "chips" || card.kind === "teach" || card.kind === "training") {
+  if (
+    card.kind === "background" ||
+    card.kind === "chips" ||
+    card.kind === "teach" ||
+    card.kind === "training" ||
+    card.kind === "confidence" ||
+    card.phase === "generation"
+  ) {
     card.correct = undefined;
     return;
   }
@@ -128,18 +145,14 @@ export async function compileGoal(goal: string): Promise<Session> {
   }
 }
 
-export async function applyAnswer(
-  sessionIn: Session,
-  answer: string,
-  extra?: { didIt?: boolean },
-): Promise<Session> {
+export async function applyAnswer(sessionIn: Session, answer: string): Promise<Session> {
   const session = cloneSession(sessionIn);
   const card = currentCard(session);
   if (!card) throw new Error("No open card.");
   const text = answer.trim();
   if (!text) throw new Error("Type an answer, or pick a choice.");
 
-  const eventId = recordAnswer(session, card, text, extra?.didIt);
+  const eventId = recordAnswer(session, card, text);
 
   let modelCorrect: boolean | undefined;
   let nextCards: Card[] = [];
@@ -162,9 +175,9 @@ export async function applyAnswer(
     card.correct = modelCorrect;
   }
 
-  if (session.moduleId) {
+  if (session.moduleId || isAssessmentPivot(card)) {
     const fb = fallbackAfterAnswer(session, card);
-    if (fb.nextCards.length) nextCards = fb.nextCards;
+    if (fb.nextCards.length || isAssessmentPivot(card)) nextCards = fb.nextCards;
   }
 
   if (usedBrain) {
@@ -184,21 +197,46 @@ export async function applyAnswer(
     addMemory(session, { stand: [`Background: ${text.slice(0, 140)}`] }, eventId);
   }
 
-  if (extra?.didIt) {
-    addMemory(session, { promised: ["Said they did the steps"] }, eventId);
-  }
-
   if (card.kind === "refresher") {
     nextCards = [];
-  } else if (card.correct === false && !card.retryOf) {
+  } else if (card.correct === false && !card.retryOf && !isAssessmentPivot(card)) {
     const hasRetry = nextCards.some((c) => c.retryOf === card.id);
     if (!hasRetry) {
       nextCards = fallbackAfterAnswer(session, card).nextCards;
     }
   }
 
-  if (card.correct === false && card.retryOf) {
+  if (card.correct === false && card.retryOf && !isAssessmentPivot(card)) {
     nextCards = nextCards.filter((c) => c.kind !== "teach" && !c.retryOf);
+  }
+
+  if (card.phase === "generation") {
+    const skillId = card.skillId || "s1";
+    const coreIdea = card.coreIdea || "";
+    const rubricCriteria = card.rubricCriteria || ["core_accuracy", "own_words", "concreteness"];
+    const { subscores, feedbackSentence } = await scoreGeneration(text, coreIdea, rubricCriteria);
+    const label = session.skills.find((s) => s.id === skillId)?.label || skillId;
+    const assessKind = assessKindFor(session, label);
+    const recognitionOriginal = session.cards.find(
+      (c) => c.phase === "recognition" && c.skillId === skillId && !c.retryOf,
+    );
+    const recognitionRetry = session.cards.find(
+      (c) => c.phase === "recognition" && c.skillId === skillId && c.retryOf,
+    );
+    const recognitionCorrect = (recognitionRetry ? recognitionRetry.correct : recognitionOriginal?.correct) === true;
+    const applicationAnswered = session.cards.find((c) => c.phase === "application" && c.skillId === skillId);
+    const applicationCorrect = applicationAnswered ? applicationAnswered.correct === true : undefined;
+    const confidence = confidenceFor(session, skillId);
+    nextCards = [
+      revealCard(session, skillId, {
+        assessKind,
+        confidence,
+        recognitionCorrect,
+        applicationCorrect,
+        subscores,
+        feedbackSentence,
+      }),
+    ];
   }
 
   nextCards = nextCards.map((incoming) => fillHollowLesson(session, incoming));

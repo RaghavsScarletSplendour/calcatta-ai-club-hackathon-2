@@ -8,12 +8,11 @@ export async function POST(req: Request) {
     const body = (await req.json()) as {
       session?: Session;
       answer?: string;
-      didIt?: boolean;
     };
     if (!body.session) {
       return Response.json({ error: "Missing session" }, { status: 400 });
     }
-    const session = await applyAnswer(body.session, body.answer || "", { didIt: body.didIt });
+    const session = await applyAnswer(body.session, body.answer || "");
     return Response.json({ session });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Turn failed";

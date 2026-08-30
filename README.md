@@ -19,7 +19,7 @@ npm install
 npm run dev
 ```
 
-Home is a blank goal box. Placeholders: statistics, intro CS, change a tire.
+Home is a blank goal box. Placeholders: intro psychology, classical conditioning, intro to cs.
 
 ## Deploy on Vercel
 

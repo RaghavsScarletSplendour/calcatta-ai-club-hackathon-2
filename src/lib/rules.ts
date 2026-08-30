@@ -45,18 +45,17 @@ export function hasTeach(session: Session): boolean {
 
 export function checkCount(session: Session): number {
   return session.cards.filter(
-    (card) => (card.kind === "confirm" || card.phase === "check") && !card.retryOf,
+    (card) => (card.phase === "check") && !card.retryOf,
   ).length;
 }
 
+export const TAUGHT_SKILL_COUNT = 2;
+
 export function checksDone(session: Session): boolean {
-  const answered = session.cards.filter(
-    (card) =>
-      (card.kind === "confirm" || card.phase === "check") &&
-      !card.retryOf &&
-      card.answer !== undefined,
+  const revealed = session.cards.filter(
+    (card) => card.phase === "reveal" && card.answer !== undefined,
   );
-  return answered.length >= 3;
+  return revealed.length >= TAUGHT_SKILL_COUNT;
 }
 
 export function shouldStopBackground(session: Session, lastAnswer: string): boolean {
@@ -100,7 +99,13 @@ export function padSkills(skills: Skill[]): Skill[] {
 }
 
 export function gradeAnswer(card: Card, answer: string): boolean | undefined {
-  if (card.kind === "background" || card.kind === "chips" || isLesson(card)) {
+  if (
+    card.kind === "background" ||
+    card.kind === "chips" ||
+    card.kind === "confidence" ||
+    card.phase === "reveal" ||
+    isLesson(card)
+  ) {
     return undefined;
   }
   if (card.subjective) {
@@ -134,7 +139,7 @@ export function applySkillStates(session: Session): void {
     const passed = related.filter(
       (card) =>
         card.correct === true &&
-        (card.kind === "confirm" || card.kind === "refresher" || card.phase === "check"),
+        (card.kind === "refresher" || card.phase === "reveal"),
     );
     skill.evidence = passed
       .map((card) => (card.answerEventId ? `[a:${card.answerEventId}]` : ""))
@@ -191,7 +196,7 @@ export function clampIncoming(session: Session, incoming: Card[], lastAnswer: st
     }
     const maxChecks = 3;
     if (
-      (kind === "confirm" || card.phase === "check") &&
+      (card.phase === "check") &&
       !card.retryOf &&
       checkCount(pretend()) >= maxChecks
     ) {

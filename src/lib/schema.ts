@@ -1,7 +1,31 @@
-export type Path = "college" | "life";
+export type Path = "college";
 export type SkillState = "empty" | "live" | "rust";
-export type CardPhase = "diagnostic" | "training" | "teach" | "check" | "refresher";
+export type CardPhase =
+  | "diagnostic"
+  | "training"
+  | "teach"
+  | "check"
+  | "refresher"
+  | "confidence"
+  | "recognition"
+  | "application"
+  | "generation"
+  | "reveal";
 export type BlockKind = "heading" | "concept" | "definition" | "example" | "analogy";
+export type AssessKind = "full" | "quick";
+
+export type AssessOption = {
+  text: string;
+  isCorrect: boolean;
+  misconceptionTag?: string;
+  explanation: string;
+};
+
+export type Subscores = {
+  core_accuracy: number;
+  own_words: number;
+  concreteness: number;
+};
 
 export type Skill = {
   id: string;
@@ -56,10 +80,18 @@ export type Card = {
   correct?: boolean;
   retryOf?: string;
   phase?: CardPhase;
-  didIt?: boolean;
   expected?: string;
   answerEventId?: number;
   feedback?: string;
+  options?: AssessOption[];
+  correctionNote?: string;
+  assessKind?: AssessKind;
+  confidence?: number;
+  rubricCriteria?: string[];
+  coreIdea?: string;
+  subscores?: Subscores;
+  compositeScore?: number;
+  calibrationMessage?: string;
 };
 
 export type Event = {

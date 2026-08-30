@@ -115,12 +115,12 @@ export function SessionView() {
     }
   }, []);
 
-  async function answer(text: string, extra?: { didIt?: boolean }) {
+  async function answer(text: string) {
     if (!session || busy) return;
     setBusy(true);
     setError("");
     try {
-      const next = await post("/api/turn", { session, answer: text, didIt: extra?.didIt });
+      const next = await post("/api/turn", { session, answer: text });
       commit(next);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Turn failed");

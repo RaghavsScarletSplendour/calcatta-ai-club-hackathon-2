@@ -100,6 +100,14 @@ Return: { "heading": string, "body": string, "kind": "definition"|"example"|"ana
 const SKIP_SYS = `JSON only. Pick one live skill (state live). Write one refresher problem with choices for that skill, as if two days passed.
 Return: { "skillId": "...", "card": { "kind":"refresher", "phase":"refresher", "prompt":"...", "choices":[...], "expected":"...", "skillId":"..." }, "memoryAdds": { "stand": string[], "promised": string[] } }`;
 
+const SCORE_SYS = `You score one learner's written answer against a rubric. JSON only.
+Score three criteria, each 0-100:
+- core_accuracy: is the central idea actually present and correct?
+- own_words: is this a paraphrase, not a copy of the source text?
+- concreteness: is any example specific and valid, or vague and generic?
+Then write exactly one specific sentence of feedback: what's missing, or what was strong. Never generic praise like "great job" on its own.
+Return: { "core_accuracy": number, "own_words": number, "concreteness": number, "feedbackSentence": string }`;
+
 function asSkills(raw: unknown): Skill[] {
   if (!Array.isArray(raw)) return [];
   return raw.map((item, i) => {
@@ -307,6 +315,34 @@ export async function brainExplain(input: {
     kind: String(row.kind || "definition"),
     sourceId: row.sourceId ? String(row.sourceId) : undefined,
     provider,
+  };
+}
+
+export async function brainScoreGeneration(
+  answer: string,
+  coreIdea: string,
+  rubricCriteria: string[],
+): Promise<{ subscores: { core_accuracy: number; own_words: number; concreteness: number }; feedbackSentence: string }> {
+  const { json } = await ask(
+    SCORE_SYS,
+    JSON.stringify({ answer, coreIdea, rubricCriteria }),
+    12000,
+  );
+  const row = json as {
+    core_accuracy?: number;
+    own_words?: number;
+    concreteness?: number;
+    feedbackSentence?: string;
+  };
+  const clamp = (n: unknown): number =>
+    typeof n === "number" && !Number.isNaN(n) ? Math.max(0, Math.min(100, Math.round(n))) : 0;
+  return {
+    subscores: {
+      core_accuracy: clamp(row.core_accuracy),
+      own_words: clamp(row.own_words),
+      concreteness: clamp(row.concreteness),
+    },
+    feedbackSentence: String(row.feedbackSentence || "Scored, but no specific feedback came back."),
   };
 }
 

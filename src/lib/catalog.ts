@@ -1,5 +1,5 @@
 import catalogJson from "../../data/courses/catalog.json";
-import type { Card, ContentBlock, Skill, Source } from "./schema";
+import type { AssessOption, Card, ContentBlock, Skill, Source } from "./schema";
 
 export type LessonPart = {
   prompt: string;
@@ -18,6 +18,29 @@ export type CheckSpec = {
   rubric?: string;
 };
 
+export type RecognitionSpec = {
+  prompt: string;
+  options: AssessOption[];
+  microCorrections: Record<string, string>;
+};
+
+export type ApplicationSpec = {
+  prompt: string;
+  options: AssessOption[];
+};
+
+export type GenerationSpec = {
+  prompt: string;
+  rubricCriteria: string[];
+  coreIdea: string;
+};
+
+export type SkillAssessment = {
+  recognition: RecognitionSpec;
+  application: ApplicationSpec;
+  generation: GenerationSpec;
+};
+
 export type CourseModule = {
   id: string;
   subject: string;
@@ -29,6 +52,7 @@ export type CourseModule = {
   training: LessonPart;
   teaching: LessonPart;
   checks: CheckSpec[];
+  assessments?: Record<string, SkillAssessment>;
 };
 
 type CatalogFile = {
@@ -37,7 +61,7 @@ type CatalogFile = {
   modules: CourseModule[];
 };
 
-const catalog = catalogJson as CatalogFile;
+const catalog = catalogJson as unknown as CatalogFile;
 
 export function listModules(): CourseModule[] {
   return catalog.modules;
@@ -107,6 +131,10 @@ export function trainingCard(mod: CourseModule): Card {
 
 export function teachingCard(mod: CourseModule): Card {
   return lessonCard(mod, mod.teaching, "teach", mod.skills[1]?.id || "s2");
+}
+
+export function moduleAssessment(mod: CourseModule, skillId: string): SkillAssessment | undefined {
+  return mod.assessments?.[skillId];
 }
 
 export function checkCards(mod: CourseModule): Card[] {

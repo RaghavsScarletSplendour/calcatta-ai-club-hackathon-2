@@ -5,6 +5,14 @@ import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "
 import { ExplainChat } from "./ExplainChat";
 import { Transcript } from "./Transcript";
 
+const CONFIDENCE_LABELS: Record<string, string> = {
+  "1": "1 — Not at all",
+  "2": "2 — A little",
+  "3": "3 — Somewhat",
+  "4": "4 — Fairly",
+  "5": "5 — Very confident",
+};
+
 function kicker(card: Card): string {
   if (card.kind === "refresher") return "Two days later";
   if (card.retryOf) return "Easier retry";
@@ -12,7 +20,11 @@ function kicker(card: Card): string {
   if (card.kind === "chips") return "Still vague";
   if (card.kind === "training") return "Training";
   if (card.kind === "teach") return "Teaching";
-  if (card.kind === "confirm") return "Confirm";
+  if (card.phase === "confidence") return "Confidence check";
+  if (card.phase === "recognition") return "Quick check";
+  if (card.phase === "application") return "Apply it";
+  if (card.phase === "generation") return "Explain it";
+  if (card.phase === "reveal") return "Your result";
   if (card.subjective) return "Write it";
   if (card.phase === "check") return "Check";
   return "Problem";
@@ -36,21 +48,21 @@ export function CardView({
   card: Card;
   goal: string;
   busy: boolean;
-  onSubmit: (answer: string, extra?: { didIt?: boolean }) => void;
+  onSubmit: (answer: string) => void;
   onSpeak: (text: string) => void;
   speaking: boolean;
   words: WordCue[];
   currentTime: number;
 }) {
   const [text, setText] = useState("");
-  const [didIt, setDidIt] = useState(false);
+  const [picked, setPicked] = useState<string | null>(null);
   const textRef = useRef("");
   const answerRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     textRef.current = "";
     setText("");
-    setDidIt(false);
+    setPicked(null);
   }, [card.id]);
 
   const visibleBlocks = (card.blocks || []).filter(
@@ -71,7 +83,9 @@ export function CardView({
   }, [card.script, visibleSteps]);
 
   const isLesson = card.kind === "training" || card.kind === "teach";
-  const needsTypedAnswer = !card.choices?.length && !isLesson;
+  const isReveal = card.phase === "reveal";
+  const hasExplanations = Boolean(card.options?.length);
+  const needsTypedAnswer = !card.choices?.length && !isLesson && !isReveal;
 
   useEffect(() => {
     if (isLesson && speakText) onSpeak(speakText);
@@ -99,7 +113,7 @@ export function CardView({
     if (busy) return;
     const trimmed = answer.trim();
     if (!trimmed) return;
-    onSubmit(trimmed, card.kind === "confirm" ? { didIt } : undefined);
+    onSubmit(trimmed);
   }
 
   function onForm(event: FormEvent) {
@@ -122,7 +136,38 @@ export function CardView({
       </p>
       <h2>{card.prompt}</h2>
 
-      {visibleBlocks.length ? (
+      {card.correctionNote ? (
+        <div className="correction-note">
+          <strong>Before you try again:</strong> {card.correctionNote}
+        </div>
+      ) : null}
+
+      {isReveal ? (
+        <div className="reveal">
+          <div className="reveal-score">
+            <span className="reveal-number">{card.compositeScore}</span>
+            <span className="reveal-out-of">/ 100</span>
+          </div>
+          {card.subscores ? (
+            <div className="reveal-subscores">
+              <div>
+                <span>Core accuracy</span>
+                <div className="bar"><div style={{ width: `${card.subscores.core_accuracy}%` }} /></div>
+              </div>
+              <div>
+                <span>Own words</span>
+                <div className="bar"><div style={{ width: `${card.subscores.own_words}%` }} /></div>
+              </div>
+              <div>
+                <span>Concreteness</span>
+                <div className="bar"><div style={{ width: `${card.subscores.concreteness}%` }} /></div>
+              </div>
+            </div>
+          ) : null}
+          {card.feedback ? <p className="reveal-feedback">{card.feedback}</p> : null}
+          {card.calibrationMessage ? <p className="reveal-calibration">{card.calibrationMessage}</p> : null}
+        </div>
+      ) : visibleBlocks.length ? (
         <div className="blocks">
           {visibleBlocks.map((block) => {
             const n = sourceIndex(card.sources, block.sourceId);
@@ -192,42 +237,70 @@ export function CardView({
 
       {card.choices?.length ? (
         <div className="choices">
-          {card.choices.map((choice) => (
-            <button key={choice} type="button" disabled={busy} onClick={() => send(choice)}>
-              {choice}
-            </button>
-          ))}
+          {card.choices.map((choice) => {
+            const option = card.options?.find((o) => o.text === choice);
+            const showExplain = hasExplanations && picked !== null;
+            const isPicked = picked === choice;
+            const cls = showExplain
+              ? option?.isCorrect
+                ? "correct"
+                : isPicked
+                  ? "wrong"
+                  : ""
+              : "";
+            return (
+              <button
+                key={choice}
+                type="button"
+                className={cls}
+                disabled={busy || showExplain}
+                onClick={() => {
+                  if (hasExplanations) {
+                    setPicked(choice);
+                    return;
+                  }
+                  send(choice);
+                }}
+              >
+                {card.phase === "confidence" ? CONFIDENCE_LABELS[choice] || choice : choice}
+                {showExplain && option ? <span className="option-explain">{option.explanation}</span> : null}
+              </button>
+            );
+          })}
         </div>
       ) : null}
 
-      {card.kind === "confirm" && card.choices?.length ? (
-        <label className="didit">
-          <input
-            type="checkbox"
-            checked={didIt}
-            onChange={(event) => setDidIt(event.target.checked)}
-          />
-          I did it (optional — does not unlock a skill)
-        </label>
+      {hasExplanations && picked !== null ? (
+        <div className="row">
+          <button type="button" className="primary" disabled={busy} onClick={() => send(picked)}>
+            Continue
+          </button>
+        </div>
       ) : null}
 
-      {isLesson ? (
+      {card.phase === "generation" ? (
+        <p className="generation-hint">No right or wrong shown here — this feeds your score on the next card.</p>
+      ) : null}
+
+      {isLesson || isReveal ? (
         <div className="row">
-          <button
-            type="button"
-            className="secondary"
-            onClick={() => onSpeak(speakText)}
-            disabled={!speakText}
-          >
-            {speaking ? "Speaking…" : "Speak"}
-          </button>
+          {isLesson ? (
+            <button
+              type="button"
+              className="secondary"
+              onClick={() => onSpeak(speakText)}
+              disabled={!speakText}
+            >
+              {speaking ? "Speaking…" : "Speak"}
+            </button>
+          ) : null}
           <button type="button" className="primary" disabled={busy} onClick={() => send("ok")}>
             Continue
           </button>
         </div>
       ) : null}
 
-      {!card.choices?.length && !isLesson ? (
+      {!card.choices?.length && !isLesson && !isReveal ? (
         <form onSubmit={onForm}>
           <label className="sr-only" htmlFor="answer">
             Answer
@@ -243,16 +316,6 @@ export function CardView({
             autoFocus={needsTypedAnswer}
             readOnly={busy}
           />
-          {card.kind === "confirm" ? (
-            <label className="didit">
-              <input
-                type="checkbox"
-                checked={didIt}
-                onChange={(event) => setDidIt(event.target.checked)}
-              />
-              I did it (optional — does not unlock a skill)
-            </label>
-          ) : null}
           <div className="row">
             <button className="primary" type="submit" disabled={busy}>
               {busy ? "Next card…" : "Enter"}

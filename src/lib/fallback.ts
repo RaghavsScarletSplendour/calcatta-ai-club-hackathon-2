@@ -6,6 +6,14 @@ import {
   teachingCard,
   trainingCard,
 } from "./catalog";
+import {
+  applicationCard,
+  assessKindFor,
+  confidenceCard,
+  generationCard,
+  recognitionCard,
+  retryRecognitionCard,
+} from "./assessment";
 import type { Card, Memory, Path, Session, Skill, Step } from "./schema";
 import {
   answeredProblems,
@@ -226,126 +234,15 @@ function teachFor(session: Session): Card {
   });
 }
 
-function checksFor(session: Session): Card[] {
+function diagnosticKind(session: Session): "stats" | "cs" | "psych" | null {
   const mod = catalogFor(session);
-  if (mod) {
-    return checkCards(mod).map((card, i) => ({
-      ...card,
-      id: `c${session.cards.length + i + 1}`,
-    }));
-  }
-  const kind = rehearsalKind(session.goal);
-  const start = session.cards.length;
-  if (kind === "stats") {
-    return [
-      {
-        id: `c${start + 1}`,
-        kind: "problem",
-        phase: "check",
-        skillId: "s1",
-        prompt: "Five incomes: 20, 22, 24, 26, 200. Which number better describes a typical income?",
-        choices: ["The mean", "The median", "The biggest value"],
-        expected: "The median",
-      },
-      {
-        id: `c${start + 2}`,
-        kind: "problem",
-        phase: "check",
-        skillId: "s3",
-        prompt: "A sample of 8 students has a higher mean than the class. What should you do first?",
-        choices: [
-          "Trust the sample — it is data",
-          "Ask how they were chosen",
-          "Drop the low scores",
-        ],
-        expected: "Ask how they were chosen",
-      },
-      {
-        id: `c${start + 3}`,
-        kind: "problem",
-        phase: "check",
-        skillId: "s1",
-        subjective: true,
-        prompt: "In two sentences: when should you prefer the median over the mean?",
-        expected: "When an extreme value pulls the mean, the median is a better typical value.",
-        rubric: "Pass if they mention outliers or a pulled mean.",
-      },
-    ];
-  }
-  if (kind === "cs") {
-    return [
-      {
-        id: `c${start + 1}`,
-        kind: "problem",
-        phase: "check",
-        skillId: "s3",
-        prompt: "A loop never stops. What is the usual miss?",
-        choices: [
-          "The variable name is too short",
-          "The stop condition never becomes true",
-          "You used a function",
-        ],
-        expected: "The stop condition never becomes true",
-      },
-      {
-        id: `c${start + 2}`,
-        kind: "problem",
-        phase: "check",
-        skillId: "s1",
-        prompt: "What does a variable keep?",
-        choices: ["A labeled value that can change", "The whole program", "Only numbers"],
-        expected: "A labeled value that can change",
-      },
-      {
-        id: `c${start + 3}`,
-        kind: "problem",
-        phase: "check",
-        skillId: "s3",
-        subjective: true,
-        prompt: "In two sentences: what makes a loop stop?",
-        expected: "A loop stops when its condition becomes false. The usual miss is never changing the value that condition reads.",
-        rubric: "Pass if they mention a stop condition or an exit.",
-      },
-    ];
-  }
-  return [
-    {
-      id: `c${start + 1}`,
-      kind: "problem",
-      phase: "check",
-      skillId: "s2",
-      prompt: `Pick the core move for: ${session.goal}`,
-      choices: [
-        "Name the outcome, then do the first real step",
-        "Read a full syllabus first",
-        "Skip the check and hope",
-      ],
-      expected: "Name the outcome, then do the first real step",
-    },
-    {
-      id: `c${start + 2}`,
-      kind: "problem",
-      phase: "check",
-      skillId: "s3",
-      prompt: "After a miss, what does this coach do?",
-      choices: ["Loop forever", "Reteach, one easier retry, then move", "Mark it live anyway"],
-      expected: "Reteach, one easier retry, then move",
-    },
-    {
-      id: `c${start + 3}`,
-      kind: "problem",
-      phase: "check",
-      skillId: "s2",
-      subjective: true,
-      prompt: `In two sentences: what is the core move for ${session.goal}?`,
-      expected: "Name the outcome, then do the first real step, then check it.",
-      rubric: "Pass if they name a first real step, not a syllabus.",
-    },
-  ];
+  if (mod?.subject === "psychology") return "psych";
+  if (mod?.subject === "computer-science") return "cs";
+  return rehearsalKind(session.goal);
 }
 
 function diagnosticProblem(session: Session): Card {
-  const kind = rehearsalKind(session.goal);
+  const kind = diagnosticKind(session);
   const n = answeredProblems(session);
   if (kind === "stats") {
     return n === 0
@@ -470,7 +367,7 @@ function reteach(session: Session, missed: Card): Card[] {
   };
   const retry: Card = {
     id: `c${session.cards.length + 2}`,
-    kind: missed.kind === "confirm" ? "confirm" : "problem",
+    kind: "problem",
     phase: missed.phase === "diagnostic" ? "diagnostic" : "check",
     skillId: missed.skillId,
     retryOf: missed.id,
@@ -481,13 +378,59 @@ function reteach(session: Session, missed: Card): Card[] {
   return [easier, retry];
 }
 
+function skillLabel(session: Session, skillId: string): string {
+  return session.skills.find((s) => s.id === skillId)?.label || skillId;
+}
+
+function hasConfidenceFor(session: Session, skillId: string): boolean {
+  return session.cards.some((c) => c.phase === "confidence" && c.skillId === skillId);
+}
+
+function recognitionFollowUp(session: Session, answered: Card): Next {
+  const skillId = answered.skillId || "s1";
+  if (answered.correct === false && !answered.retryOf) {
+    return { nextCards: [retryRecognitionCard(session, answered)], memoryAdds: {} };
+  }
+  const label = skillLabel(session, skillId);
+  const kind = assessKindFor(session, label);
+  const next = kind === "full" ? applicationCard(session, skillId) : generationCard(session, skillId);
+  const memoryAdds: Partial<Memory> = answered.correct
+    ? { landed: [`Recognized ${label} correctly`] }
+    : {};
+  return { nextCards: [next], memoryAdds };
+}
+
+function revealFollowUp(session: Session): Card[] {
+  if (!hasTeach(session)) {
+    if (!hasConfidenceFor(session, "s2")) {
+      return [confidenceCard(session, "s2", skillLabel(session, "s2"))];
+    }
+    return [teachFor(session)];
+  }
+  return [];
+}
+
 export function fallbackAfterAnswer(session: Session, answered: Card): Next {
   const memoryAdds: Partial<Memory> = {};
   if (answered.kind === "background") {
     memoryAdds.stand = [`Background: ${answered.answer?.slice(0, 140)}`];
   }
-  if (answered.correct === true && (answered.phase === "check" || answered.kind === "confirm")) {
-    memoryAdds.landed = [`Check passed on ${answered.skillId || "a skill"}`];
+
+  if (answered.phase === "confidence") {
+    const next = hasTraining(session) ? teachFor(session) : trainingFor(session);
+    return { nextCards: [next], memoryAdds };
+  }
+  if (answered.phase === "recognition") {
+    return recognitionFollowUp(session, answered);
+  }
+  if (answered.phase === "application") {
+    return { nextCards: [generationCard(session, answered.skillId || "s1")], memoryAdds };
+  }
+  if (answered.phase === "reveal") {
+    return { nextCards: revealFollowUp(session), memoryAdds };
+  }
+  if (answered.phase === "generation") {
+    return { nextCards: [], memoryAdds };
   }
 
   if (answered.correct === false && !answered.retryOf) {
@@ -495,11 +438,11 @@ export function fallbackAfterAnswer(session: Session, answered: Card): Next {
   }
 
   if ((answered.kind === "training" || answered.phase === "training") && !hasTeach(session)) {
-    return { nextCards: [teachFor(session)], memoryAdds };
+    return { nextCards: [recognitionCard(session, answered.skillId || "s1")], memoryAdds };
   }
 
   if (answered.kind === "teach" && answered.phase === "teach") {
-    return { nextCards: checksFor(session), memoryAdds };
+    return { nextCards: [recognitionCard(session, answered.skillId || "s2")], memoryAdds };
   }
 
   if (!hasTraining(session) && !hasTeach(session) && !shouldEndDiagnostic(session)) {
@@ -514,19 +457,17 @@ export function fallbackAfterAnswer(session: Session, answered: Card): Next {
   }
 
   if (!hasTraining(session)) {
-    return { nextCards: [trainingFor(session)], memoryAdds };
+    const next = hasConfidenceFor(session, "s1")
+      ? trainingFor(session)
+      : confidenceCard(session, "s1", skillLabel(session, "s1"));
+    return { nextCards: [next], memoryAdds };
   }
 
   if (!hasTeach(session)) {
-    return { nextCards: [teachFor(session)], memoryAdds };
-  }
-
-  const pendingCheck = session.cards.some(
-    (card) =>
-      (card.phase === "check" || card.kind === "confirm") && card.answer === undefined,
-  );
-  if (!pendingCheck && answered.phase === "diagnostic") {
-    return { nextCards: [trainingFor(session)], memoryAdds };
+    const next = hasConfidenceFor(session, "s2")
+      ? teachFor(session)
+      : confidenceCard(session, "s2", skillLabel(session, "s2"));
+    return { nextCards: [next], memoryAdds };
   }
 
   return { nextCards: [], memoryAdds };
@@ -598,7 +539,19 @@ export function fallbackSkip(session: Session): Next {
 }
 
 export function fallbackOverrideTeach(session: Session): Card[] {
-  if (!hasTraining(session)) return [trainingFor(session)];
-  if (!hasTeach(session)) return [teachFor(session)];
-  return checksFor(session);
+  if (!hasTraining(session)) {
+    return [
+      hasConfidenceFor(session, "s1")
+        ? trainingFor(session)
+        : confidenceCard(session, "s1", skillLabel(session, "s1")),
+    ];
+  }
+  if (!hasTeach(session)) {
+    return [
+      hasConfidenceFor(session, "s2")
+        ? teachFor(session)
+        : confidenceCard(session, "s2", skillLabel(session, "s2")),
+    ];
+  }
+  return [recognitionCard(session, "s2")];
 }

@@ -7,7 +7,7 @@ import { FormEvent, useRef, useState } from "react";
 const EXAMPLES = [
   "intro psychology",
   "classical conditioning",
-  "how to change a tire",
+  "intro to cs",
 ];
 
 export function GoalHome() {
@@ -63,7 +63,7 @@ export function GoalHome() {
               goalRef.current = event.target.value;
               setGoal(event.target.value);
             }}
-            placeholder="intro psychology, conditioning, change a tire"
+            placeholder="intro psychology, conditioning, intro to cs"
             autoFocus
             readOnly={busy}
           />
